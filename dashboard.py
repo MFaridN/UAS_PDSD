@@ -84,6 +84,17 @@ def pola_curah_hujan (data):
     """
         )
         
+
+def perbedaan_polusi(data):
+    # Analisis korelasi
+    correlation_matrix = data[['PM2.5', 'TEMP', 'PRES', 'WSPM']].corr()
+
+    # Visualisasi matriks korelasi menggunakan heatmap
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=.5)
+    plt.title('Matriks Korelasi antara Variabel Cuaca dan PM2.5')
+    plt.show()
+
 df_Data = load_data("https://raw.githubusercontent.com/MFaridN/UAS_PDSD/main/PRSA_Data_Aotizhongxin_20130301-20170228.csv")
 data_clean = cleaning_data (df_Data)
 data_clean_wd = cleaning_data_wd (df_Data)
@@ -108,8 +119,10 @@ if (selected == 'Dashboard') :
         st.header("Tab 3")
         st.image("https://static.streamlit.io/examples/owl.jpg")
     with tab4:
-        st.header("Tab 3")
-        st.image("https://static.streamlit.io/examples/owl.jpg")
+        st.subheader('10122510 - Fikkry Ihza Fachrezi')
+        st.subheader('Perbedaan Tingkat Polusi')
+        perbedaan_polusi(data_clean)
+
     with tab5:
         st.header("Tab 3")
         pola_curah_hujan (data_clean)
