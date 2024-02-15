@@ -35,10 +35,20 @@ def cleaning_data_wd (df_Data):
     return data_wd
 
 def Air_Pollution_Day(data):
+    # Buat kolom 'bulan'
+    data['bulan'] = data['tanggal'].dt.strftime('%Y-%m')
+    # Perbandingan Per Bulan
+    monthly_comparison = data.groupby('bulan').mean()
+    # Ekstrak bulan dari kolom tanggal
+    data['bulan'] = data['tanggal'].dt.month
+    df_tabel = pd.DataFrame({data['bulan']})  
+    st.dataframe(tabel=df, width=500, height=150)
+    
     # Convert date columns to datetime
     data['tanggal'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d')
     # Group by date and calculate daily mean
     daily_comparison = data.groupby('tanggal').mean()
+    
     
     # Plotting
     plt.figure(figsize=(12, 6))
@@ -56,34 +66,6 @@ def Air_Pollution_Day(data):
     """
         )
 
-
-def pola_curah_hujan (data):
-    # Perbandingan per bulan (atau sesuaikan dengan periode waktu yang diinginkan)
-    # Buat kolom 'bulan'
-    data['bulan'] = data['tanggal'].dt.strftime('%Y-%m')
-    # Perbandingan Per Bulan
-    monthly_comparison = data.groupby('bulan').mean()
-    monthly_comparison
-    # Ekstrak bulan dari kolom tanggal
-    data['bulan'] = data['tanggal'].dt.month
-    
-    # Perbandingan rata-rata curah hujan per bulan
-    monthly_rain_comparison = data.groupby('bulan')['RAIN'].mean()
-    
-    # Visualisasi pola musiman curah hujan
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x=monthly_rain_comparison.index, y=monthly_rain_comparison)
-    plt.xlabel('Bulan')
-    plt.ylabel('Rata-rata Curah Hujan')
-    plt.title('Pola Musiman Curah Hujan')
-    plt.show()
-    with st.expander("See explanation"):
-        st.write(
-    """Untuk menentukan tingkat polusi udara saya mengambil berdasarkan PM2.5. PM2.5 sebuah istilah yang digunakan untuk mengukur partikel halus di udara, yang memiliki diameter kurang dari atau sama dengan 2.5 mikrometer. Partikel ini dapat berasal dari berbagai sumber, termasuk emisi kendaraan bermotor, industri, pembakaran biomassa, dan debu.
-    Seperti ya dilihat berdasarkan grafik bahwa tingkat polusi tertinggi di station Aotizhongxin biasa terjadi di bulan pergantian tahun atau bulan awal awal tahun.
-    """
-        )
-        
 df_Data = load_data("https://raw.githubusercontent.com/MFaridN/UAS_PDSD/main/PRSA_Data_Aotizhongxin_20130301-20170228.csv")
 data_clean = cleaning_data (df_Data)
 data_clean_wd = cleaning_data_wd (df_Data)
@@ -112,7 +94,7 @@ if (selected == 'Dashboard') :
         st.image("https://static.streamlit.io/examples/owl.jpg")
     with tab5:
         st.header("Tab 3")
-        pola_curah_hujan (data_clean)
+        st.image("https://static.streamlit.io/examples/owl.jpg")
     with tab6:
         st.header("Tab 3")
         st.image("https://static.streamlit.io/examples/owl.jpg")
