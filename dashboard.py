@@ -35,14 +35,14 @@ def cleaning_data_wd (df_Data):
     return data_wd
 
 def Air_Pollution_Day(data):
-    # Buat kolom 'bulan'
-    data['bulan'] = data['tanggal'].dt.strftime('%Y-%m')
-    # Perbandingan Per Bulan
-    monthly_comparison = data.groupby('bulan').mean()
-    # Ekstrak bulan dari kolom tanggal
-    data['bulan'] = data['tanggal'].dt.month
-    df_tabel = pd.DataFrame({data['bulan']})  
-    st.dataframe(tabel=df, width=500, height=150)
+    # # Buat kolom 'bulan'
+    # data['bulan'] = data['tanggal'].dt.strftime('%Y-%m')
+    # # Perbandingan Per Bulan
+    # monthly_comparison = data.groupby('bulan').mean()
+    # # Ekstrak bulan dari kolom tanggal
+    # data['bulan'] = data['tanggal'].dt.month
+    # df_tabel = pd.DataFrame({data['bulan']})  
+    # st.dataframe(tabel=df, width=500, height=150)
     
     # Convert date columns to datetime
     data['tanggal'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d')
