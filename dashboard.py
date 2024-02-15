@@ -100,10 +100,11 @@ def perbedaan_polusi(data):
     correlation_matrix = data[['PM2.5', 'TEMP', 'PRES', 'WSPM']].corr()
 
     # Visualisasi matriks korelasi menggunakan heatmap
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=.5)
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=.5, ax=ax)
     plt.title('Matriks Korelasi antara Variabel Cuaca dan PM2.5')
-    plt.show()
+    st.pyplot(fig)
+
 
 df_Data = load_data("https://raw.githubusercontent.com/MFaridN/UAS_PDSD/main/PRSA_Data_Aotizhongxin_20130301-20170228.csv")
 data_clean = cleaning_data (df_Data)
