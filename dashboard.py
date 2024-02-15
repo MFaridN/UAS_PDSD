@@ -55,7 +55,35 @@ def Air_Pollution_Day(data):
     Seperti ya dilihat berdasarkan grafik bahwa tingkat polusi tertinggi di station Aotizhongxin biasa terjadi di bulan pergantian tahun atau bulan awal awal tahun.
     """
         )
+
+
+def pola_curah_hujan (data):
+    # Perbandingan per bulan (atau sesuaikan dengan periode waktu yang diinginkan)
+    # Buat kolom 'bulan'
+    data['bulan'] = data['tanggal'].dt.strftime('%Y-%m')
+    # Perbandingan Per Bulan
+    monthly_comparison = data.groupby('bulan').mean()
+    monthly_comparison
+    # Ekstrak bulan dari kolom tanggal
+    data['bulan'] = data['tanggal'].dt.month
     
+    # Perbandingan rata-rata curah hujan per bulan
+    monthly_rain_comparison = data.groupby('bulan')['RAIN'].mean()
+    
+    # Visualisasi pola musiman curah hujan
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x=monthly_rain_comparison.index, y=monthly_rain_comparison)
+    plt.xlabel('Bulan')
+    plt.ylabel('Rata-rata Curah Hujan')
+    plt.title('Pola Musiman Curah Hujan')
+    plt.show()
+    with st.expander("See explanation"):
+        st.write(
+    """Untuk menentukan tingkat polusi udara saya mengambil berdasarkan PM2.5. PM2.5 sebuah istilah yang digunakan untuk mengukur partikel halus di udara, yang memiliki diameter kurang dari atau sama dengan 2.5 mikrometer. Partikel ini dapat berasal dari berbagai sumber, termasuk emisi kendaraan bermotor, industri, pembakaran biomassa, dan debu.
+    Seperti ya dilihat berdasarkan grafik bahwa tingkat polusi tertinggi di station Aotizhongxin biasa terjadi di bulan pergantian tahun atau bulan awal awal tahun.
+    """
+        )
+        
 df_Data = load_data("https://raw.githubusercontent.com/MFaridN/UAS_PDSD/main/PRSA_Data_Aotizhongxin_20130301-20170228.csv")
 data_clean = cleaning_data (df_Data)
 data_clean_wd = cleaning_data_wd (df_Data)
@@ -66,16 +94,16 @@ with st.sidebar:
                            menu_icon="cast",
                            default_index=0)
 if (selected == 'Dashboard') :
-    st.header(f"Analisis Polusi Udara AOT")
+    st.header(f"Analisis Polusi Udara Aotizhongxin")
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Pertanyaan 1", "Pertanyaan 2", "Pertanyaan 3", "Pertanyaan 4", "Pertanyaan 5","Pertanyaan 6"])
 
     with tab1:
-        st.subheader('Muha')
+        st.subheader('10122256 - Muhammad Farid Nurrahman')
         st.subheader('Perbandingan Tingkat PM2.5 per Hari')
         Air_Pollution_Day(data_clean)
     with tab2:
         st.header("Tab 2")
-        st.image("https://static.streamlit.io/examples/dog.jpg")
+        
     with tab3:
         st.header("Tab 3")
         st.image("https://static.streamlit.io/examples/owl.jpg")
@@ -84,7 +112,7 @@ if (selected == 'Dashboard') :
         st.image("https://static.streamlit.io/examples/owl.jpg")
     with tab5:
         st.header("Tab 3")
-        st.image("https://static.streamlit.io/examples/owl.jpg")
+        pola_curah_hujan (data_clean)
     with tab6:
         st.header("Tab 3")
         st.image("https://static.streamlit.io/examples/owl.jpg")
