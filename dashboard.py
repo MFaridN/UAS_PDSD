@@ -66,15 +66,25 @@ with st.sidebar:
                            menu_icon="cast",
                            default_index=0)
 if (selected == 'Dashboard') :
-    st.header(f"Dashboard Analisis Polusi Udara AOT")
-    tab1, tab2, tab3 = st.tabs(["Pertanyaan 1", "Tab 2", "Tab 3"])
+    st.header(f"Analisis Polusi Udara AOT")
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Pertanyaan 1", "Pertanyaan 2", "Pertanyaan 3", "Pertanyaan 4", "Pertanyaan 5","Pertanyaan 6"])
 
     with tab1:
+        st.subheader('Muha')
         st.subheader('Perbandingan Tingkat PM2.5 per Hari')
         Air_Pollution_Day(data_clean)
     with tab2:
         st.header("Tab 2")
         st.image("https://static.streamlit.io/examples/dog.jpg")
     with tab3:
+        st.header("Tab 3")
+        st.image("https://static.streamlit.io/examples/owl.jpg")
+    with tab4:
+        st.header("Tab 3")
+        st.image("https://static.streamlit.io/examples/owl.jpg")
+    with tab5:
+        st.header("Tab 3")
+        st.image("https://static.streamlit.io/examples/owl.jpg")
+    with tab6:
         st.header("Tab 3")
         st.image("https://static.streamlit.io/examples/owl.jpg")
