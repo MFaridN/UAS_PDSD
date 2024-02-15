@@ -34,7 +34,7 @@ def cleaning_data_wd (df_Data):
     
     return data_wd
 
-def pola_CurahHujan (data):
+def Pola_CurahHujan (data):
     #Perbandingan per bulan (atau sesuaikan dengan periode waktu yang diinginkan)
     # Buat kolom 'bulan'
     data['bulan'] = data['tanggal'].dt.strftime('%Y-%m')
@@ -84,7 +84,7 @@ if (selected == 'Dashboard') :
     with tab5:
         st.header("Tab 5")
         st.image("https://static.streamlit.io/examples/owl.jpg")
-        pola_CurahHujan (data_clean)
+        Pola_CurahHujan (data_clean)
     with tab6:
         st.header("Tab 3")
         st.image("https://static.streamlit.io/examples/owl.jpg")
