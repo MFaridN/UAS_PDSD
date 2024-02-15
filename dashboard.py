@@ -105,7 +105,6 @@ def perbedaan_polusi(data):
     plt.title('Matriks Korelasi antara Variabel Cuaca dan PM2.5')
     st.pyplot(fig)
 
-
 df_Data = load_data("https://raw.githubusercontent.com/MFaridN/UAS_PDSD/main/PRSA_Data_Aotizhongxin_20130301-20170228.csv")
 data_clean = cleaning_data (df_Data)
 data_clean_wd = cleaning_data_wd (df_Data)
