@@ -25,32 +25,31 @@ def cleaning_data (df_Data):
 
 def cleaning_data_wd (df_Data):
     # Copy DataFrame to avoid modifying original data
-    data_wd = df_Data.copy()
+    data = df_Data.copy()
     
     # Fill missing values with forward fill method
-    data_wd.fillna(method='ffill', inplace=True)
+    data.fillna(method='ffill', inplace=True)
     
-    data_wd['tanggal'] = pd.to_datetime(data_wd[['year', 'month', 'day']], format='%Y-%m-%d')
+    data['tanggal'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d')
     
-    return data_wd
-
+    return data
+    
 def Air_Pollution_Day(data):
-    # # Buat kolom 'bulan'
-    # data['bulan'] = data['tanggal'].dt.strftime('%Y-%m')
-    # # Perbandingan Per Bulan
-    # monthly_comparison = data.groupby('bulan').mean()
-    # # Ekstrak bulan dari kolom tanggal
-    # data['bulan'] = data['tanggal'].dt.month
-    # df_tabel = pd.DataFrame({data['bulan']})  
-    # st.dataframe(tabel=df, width=500, height=150)
-    
     # Convert date columns to datetime
     data['tanggal'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d')
-    # Group by date and calculate daily mean
-    daily_comparison = data.groupby('tanggal').mean()
     
+
+    # Menampilkan tabel dengan tahun dan data rata-rata PM2.5 per tahun
+    st.subheader('Tabel Tahun dan Rata-rata PM2.5 Pertahun')
+    yearly_pm25_avg = data.groupby(data['tanggal'].dt.year)['PM2.5'].mean().reset_index()
+    yearly_pm25_avg.columns = ['Tahun', 'Rata-rata PM2.5']
+    
+    # Menghilangkan koma dari angka dalam tabel
+    yearly_pm25_avg = yearly_pm25_avg.applymap(lambda x: '{:.0f}'.format(x) if isinstance(x, (int, float)) else x)
+    st.write(yearly_pm25_avg)
     
     # Plotting
+    st.subheader('Grafik Perbandingan Tingkat PM2.5 per Hari di Aotizhongxin')
     plt.figure(figsize=(12, 6))
     sns.set_theme()
     plt.plot(data['tanggal'], data['PM2.5'], label='PM2.5')
@@ -59,12 +58,22 @@ def Air_Pollution_Day(data):
     plt.title('Perbandingan Tingkat PM2.5 per Hari di Aotizhongxin')
     plt.legend()
     st.pyplot(plt)
-    with st.expander("See explanation"):
+    
+    # Penjelasan
+    with st.expander("Lihat Penjelasan"):
         st.write(
-    """Untuk menentukan tingkat polusi udara saya mengambil berdasarkan PM2.5. PM2.5 sebuah istilah yang digunakan untuk mengukur partikel halus di udara, yang memiliki diameter kurang dari atau sama dengan 2.5 mikrometer. Partikel ini dapat berasal dari berbagai sumber, termasuk emisi kendaraan bermotor, industri, pembakaran biomassa, dan debu.
-    Seperti ya dilihat berdasarkan grafik bahwa tingkat polusi tertinggi di station Aotizhongxin biasa terjadi di bulan pergantian tahun atau bulan awal awal tahun.
+    """Untuk menentukan tingkat polusi udara, digunakan PM2.5. PM2.5 adalah partikel halus di udara dengan diameter kurang dari atau sama dengan 2.5 mikrometer. Partikel ini berasal dari berbagai sumber, termasuk emisi kendaraan bermotor, industri, pembakaran biomassa, dan debu.
+    Dari grafik, dapat dilihat bahwa tingkat polusi udara tertinggi di stasiun Aotizhongxin biasanya terjadi pada bulan-bulan pergantian tahun atau awal tahun.
     """
         )
+    st.subheader('Perbandingan Data Kualitas Udara perhari di Aotizhongxin')
+    # Memilih kolom yang akan ditampilkan
+    selected_columns = st.multiselect('Pilih kolom', ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3', 'TEMP', 'PRES', 'DEWP', 'RAIN', 'wd', 'WSPM'])
+
+    # Menampilkan plot perbandingan per hari
+    if selected_columns:
+        daily_average = data.groupby(data['tanggal'].dt.date).mean()
+        st.line_chart(daily_average[selected_columns])
 
 
 def pola_curah_hujan (data):
@@ -73,7 +82,6 @@ def pola_curah_hujan (data):
     data['bulan'] = data['tanggal'].dt.strftime('%Y-%m')
     # Perbandingan Per Bulan
     monthly_comparison = data.groupby('bulan').mean()
-    monthly_comparison
     # Ekstrak bulan dari kolom tanggal
     data['bulan'] = data['tanggal'].dt.month
     
@@ -86,7 +94,7 @@ def pola_curah_hujan (data):
     plt.xlabel('Bulan')
     plt.ylabel('Rata-rata Curah Hujan')
     plt.title('Pola Musiman Curah Hujan')
-    plt.show()
+    st.pyplot(plt)
     with st.expander("See explanation"):
         st.write(
     """Untuk menentukan tingkat polusi udara saya mengambil berdasarkan PM2.5. PM2.5 sebuah istilah yang digunakan untuk mengukur partikel halus di udara, yang memiliki diameter kurang dari atau sama dengan 2.5 mikrometer. Partikel ini dapat berasal dari berbagai sumber, termasuk emisi kendaraan bermotor, industri, pembakaran biomassa, dan debu.
@@ -103,7 +111,49 @@ def perbedaan_polusi(data):
     fig, ax = plt.subplots(figsize=(10, 8))
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=.5, ax=ax)
     plt.title('Matriks Korelasi antara Variabel Cuaca dan PM2.5')
-    st.pyplot(fig)
+    st.pyplot(plt)
+
+def korelasiSO(data):
+
+    quest3 = data[['TEMP','PRES','WSPM','CO']]
+
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(quest3.corr(), cmap='Blues', annot=True, fmt='.2f')
+    plt.suptitle("Korelasi kandungan CO", y=1.02)
+    plt.show()
+    st.pyplot(plt)
+
+def korelasiSO2(data):
+    quest4 = data[['TEMP','PRES','WSPM','SO2']]
+
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(quest4.corr(), cmap='Blues', annot=True, fmt='.2f')
+    plt.suptitle("Korelasi kandungan SO2", y=1.02)
+    plt.show()
+    st.pyplot(plt)
+
+def korelasiNO2(data):
+    quest6 = data[['TEMP','PRES','WSPM','O3']]
+
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(quest6.corr(), cmap='Blues', annot=True, fmt='.2f')
+    plt.suptitle("Korelasi kandungan O3", y=1.02)
+    plt.show()
+    st.pyplot(plt)
+    with st.expander("See explanation"):
+        st.write(
+        """ 
+        1. Terdapat korelasi yang signifikan pada kandungan CO dan O3, dengan nilai korelasi yang lebih besar dari 0.1. Hal ini menunjukkan adanya hubungan positif antara kandungan CO2 dan O3.
+        2. Korelasi yang signifikan juga ditemukan antara kandungan SO2 dan NO2, dengan nilai korelasi yang lebih besar dari 0.1. Ini mungkin menunjukkan adanya polusi udara yang berasal dari sumber yang sama atau proses yang serupa yang menghasilkan kedua zat tersebut.
+        3. Namun, tidak ada korelasi yang signifikan yang ditemukan antara kandungan CO2 dan SO2, serta antara kandungan CO2 dan NO2. Hal ini menunjukkan bahwa meskipun kedua pasangan tersebut memiliki nilai korelasi di atas 0.1, hubungan antara kandungan CO2 dan SO2 atau NO2 tidak cukup kuat untuk dianggap signifikan.
+        """
+    )
+    with st.expander("Conclution"):
+        st.write(
+        """ 
+            Semua Kandungan terhadap CO, SO2, dan O3 memiliki korelasi tinggi dikarenakan nilai nya > 0.1
+        """
+    )
 
 df_Data = load_data("https://raw.githubusercontent.com/MFaridN/UAS_PDSD/main/PRSA_Data_Aotizhongxin_20130301-20170228.csv")
 data_clean = cleaning_data (df_Data)
@@ -120,22 +170,23 @@ if (selected == 'Dashboard') :
 
     with tab1:
         st.subheader('10122256 - Muhammad Farid Nurrahman')
-        st.subheader('Perbandingan Tingkat PM2.5 per Hari')
         Air_Pollution_Day(data_clean)
     with tab2:
         st.header("Tab 2")
         
     with tab3:
-        st.header("Tab 3")
-        st.image("https://static.streamlit.io/examples/owl.jpg")
+        st.subheader('10122244 - Mochammad Syahrul Almugni Yusu')
+        korelasiSO(data_clean)
+        korelasiSO2(data_clean)
+        korelasiNO2(data_clean)
     with tab4:
         st.subheader('10122510 - Fikkry Ihza Fachrezi')
         st.subheader('Perbedaan Tingkat Polusi')
         perbedaan_polusi(data_clean)
 
     with tab5:
-        st.header("Tab 3")
-        st.image("https://static.streamlit.io/examples/owl.jpg")
+        st.subheader('10122273 - Win Termulo Nova')
+        pola_curah_hujan (data_clean)
     with tab6:
         st.header("Tab 3")
         st.image("https://static.streamlit.io/examples/owl.jpg")
