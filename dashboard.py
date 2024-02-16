@@ -1,15 +1,8 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-
 from streamlit_option_menu import option_menu
-
-# testing
-import statsmodels.api as sm
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
 
 @st.cache_data
 #Load Data CSV
@@ -17,9 +10,9 @@ def load_data(url) :
     df = pd.read_csv(url)
     return df
 
-def cleaning_data (data1):
+def cleaning_data (df_Data):
     # Copy DataFrame to avoid modifying original data
-    data = data1.copy()
+    data = df_Data.copy()
     
     # Fill missing values with forward fill method
     data.fillna(method='ffill', inplace=True)
@@ -30,16 +23,16 @@ def cleaning_data (data1):
     
     return data
 
-def cleaning_data_wd (data1):
+def cleaning_data_wd (df_Data):
     # Copy DataFrame to avoid modifying original data
-    data = df_Data.copy()
+    data_wd = df_Data.copy()
     
     # Fill missing values with forward fill method
-    data.fillna(method='ffill', inplace=True)
+    data_wd.fillna(method='ffill', inplace=True)
     
-    data['tanggal'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d')
+    data_wd['tanggal'] = pd.to_datetime(data_wd[['year', 'month', 'day']], format='%Y-%m-%d')
     
-    return data
+    return data_wd
     
 def Air_Pollution_Day(data):
     # Convert date columns to datetime
@@ -90,199 +83,89 @@ def pola_curah_hujan (data):
     monthly_comparison = data.groupby('bulan').mean()
     # Ekstrak bulan dari kolom tanggal
     data['bulan'] = data['tanggal'].dt.month
-    data_wd['tanggal_jam'] = pd.to_datetime(data1[['year', 'month', 'day','hour']], format='%Y-%m-%d %H:%M:%S')
     
-    return data_wd
-
-# def Air_Pollution_hour_some(data1):
-# Sepanjang tahun / hari
-def Air_Pollution_Hourly_Umum(data1, pollutant):
-    # Convert date columns to datetime
-    data1['tanggal_jam'] = pd.to_datetime(data1[['year', 'month', 'day']], format='%Y-%m-%d %H:%M:%S')
-    # Group by date and calculate hourly mean based on the selected pollutant
-    hourly_comparison = data1.groupby('tanggal_jam')[pollutant].mean()
+    # Perbandingan rata-rata curah hujan per bulan
+    monthly_rain_comparison = data.groupby('bulan')['RAIN'].mean()
     
-    # Visualisasi per jam
-    plt.figure(figsize=(20, 6))
-    plt.plot(hourly_comparison.index, hourly_comparison, label=pollutant)
-    plt.xlabel('Jam dalam Sehari')
-    plt.ylabel(f'Rata-rata Tingkat {pollutant}')
-    plt.title(f'Perbandingan Tingkat {pollutant} per Jam dalam Sehari')
-    plt.legend()
+    # Visualisasi pola musiman curah hujan
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x=monthly_rain_comparison.index, y=monthly_rain_comparison)
+    plt.xlabel('Bulan')
+    plt.ylabel('Rata-rata Curah Hujan')
+    plt.title('Pola Musiman Curah Hujan')
     st.pyplot(plt)
-
-# satu tahun terakhir 
-
-    # 
-def Air_Pollution_One_Year(data1, pollutant):
-    tanggal_terakhir = data1['tanggal_jam'].max()
-    tanggal_sebelumnya = tanggal_terakhir - pd.DateOffset(years=1)
-
-    # Filter data untuk satu tahun terakhir
-    data_one_year = data1[(data1['tanggal_jam'] >= tanggal_sebelumnya) & (data1['tanggal_jam'] <= tanggal_terakhir)]
-    
-    # Perhitungan rata-rata tingkat polutan per jam dalam sehari
-    hourly_comparison_one_year = data_one_year.groupby(data_one_year['tanggal_jam']).mean()
-    
-    # Visualisasi per jam
-    plt.figure(figsize=(15, 6))
-    plt.plot(hourly_comparison_one_year.index, hourly_comparison_one_year[pollutant], marker="o", markersize=5, label=pollutant)
-
-    plt.xlabel('Waktu')
-    plt.ylabel(f'Rata-rata Tingkat {pollutant}')
-    plt.title(f'Perbandingan Tingkat {pollutant} per jam dalam sehari selama satu tahun terakhir')
-    plt.legend()
-    plt.grid(True, linestyle="--", alpha=0.7)
-    plt.xticks(rotation=45, ha="right")
-    plt.xlim(hourly_comparison_one_year.index.min(), hourly_comparison_one_year.index.max())
-    plt.gca().xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m-%d %H:%M:%S'))
-    plt.gca().set_ylim(bottom=0)  # Mengatur batas bawah sumbu y ke 0 agar tidak negatif
-    plt.tight_layout()
-    st.pyplot(plt)
-
-# Satu tahun terakhir end
-
-# Satu bulan terakhir
-def Air_Pollution_Last_Month(data1, pollutant):
-    bulan_terakhir = data1['tanggal_jam'].max()
-    start_date = bulan_terakhir - pd.DateOffset(months=1)
-
-    data_one_month = data1[(data1['tanggal_jam'] >= start_date) & (data1['tanggal_jam'] <= bulan_terakhir)]
-    
-    hourly_comparison_one_month = data_one_month.groupby(data_one_month['tanggal_jam']).mean()
-
-    # Visualisasi per jam
-    plt.figure(figsize=(15, 6))
-    plt.plot(hourly_comparison_one_month.index, hourly_comparison_one_month[pollutant], marker="o", markersize=5, label=pollutant)
-
-    plt.xlabel('Waktu')
-    plt.ylabel(f'Rata-rata Tingkat {pollutant}')
-    plt.title(f'Perbandingan Tingkat {pollutant} per jam dalam sehari selama satu bulan terakhir')
-    plt.legend()
-    plt.grid(True, linestyle="--", alpha=0.7)
-    plt.xticks(rotation=45, ha="right")
-    plt.xlim(hourly_comparison_one_month.index.min(), hourly_comparison_one_month.index.max())
-    plt.gca().xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m-%d %H:%M:%S'))
-    plt.gca().set_ylim(bottom=0)  # Mengatur batas bawah sumbu y ke 0 agar tidak negatif
-    plt.tight_layout()
-    st.pyplot(plt)
-# Satu bulan terakhir end
-    
-# testing
-def air_quality_regression(data2):
-    X = data2[['TEMP']]
-    y = data2['PM2.5']
-    X = sm.add_constant(X)
-    model = sm.OLS(y, X)
-    results = model.fit()
-    return results.summary()
-
-def perform_clustering(data3):
-    X = data3[['TEMP', 'PRES', 'WSPM']]
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    kmeans = KMeans(n_clusters=3, random_state=0)
-    data3['cluster'] = kmeans.fit_predict(X_scaled)
-    return data3
-# testing end
-
-data1 = load_data("https://raw.githubusercontent.com/MFaridN/UAS_PDSD/main/PRSA_Data_Aotizhongxin_20130301-20170228.csv")
-data_bersih = cleaning_data(data1)
-data_bersih_hourly = cleaning_data_wd(data_bersih)
-
-# Sidebar
-with st.sidebar :
-  
-  st.header("Klentit")
-  menu = option_menu('Menu',["Dashboard","Profile"],
-    icons = ["ease12", "graph-up"],
-    menu_icon = "cast",
-    default_index = 0)
-
-# Side bar END
-
-
-# main view
-if (menu == "Dashboard"):
-    # airPolutionTesting(data_bersih)
-    # Air_Pollution_one_year_PM10(data_bersih_hourly)
-    # st.write("qq")
-    # Air_Pollution_Last_Month(data_bersih_hourly,"PM10")
-
-    # Air_Pollution_one_year_PM10(data_bersih)
-    # st.write(data_bersih.columns)
-    
-      
-
-    tab1, tab2 = st.tabs(["Klentit 1","Klentit2" ]) 
-    with tab1 :
-      # testing
-      st.header("Hasil Clustering")
-      data_with_cluster = perform_clustering(data_bersih)
-      st.write(data_with_cluster.tail())
-      # Misalnya, Anda bisa menampilkan scatter plot untuk melihat pemetaan klaster
-      plt.scatter(data_with_cluster['TEMP'], data_with_cluster['PRES'], c=data_with_cluster['cluster'], cmap='viridis')
-      plt.xlabel('TEMP')
-      plt.ylabel('PRES')
-      plt.title('Hasil Clustering')
-      st.pyplot(plt)
-
-
-    # testing end
-      # Display data tail dari data main atau data bersih dulu
-      st.write("Bagaimana tren kualitas udara berdasarkan PM2.5, PM10, SO2, NO2, CO, dan O3 selama periode waktu tertentu?")
-      st.write("Nama : Erwin Hafiz Triadi")
-      st.write("Nim : 10122269")
-      st.title("Data yang Digunakan di Atongxinzin")
-      st.write(data_bersih.tail())
-      st.header("Overview tren sepanjang waktu")
-      Air_Pollution_Hourly_Umum(data_bersih,"PM10")
-      with st.expander("Penjelasan Tingkat PM10 per jam dalam sehari") :
-        st.write('Dilihat dari grafik diatas dapat dilihat dan diketahui tren sepanjang waktu dimana terjadi kenaikan dan penurunan') 
-      st.write('<hr>', unsafe_allow_html=True) #hr Garis Pemisah
-      Air_Pollution_Hourly_Umum(data_bersih,"PM2.5")
-      with st.expander("Penjelasan Tingkat PM2.5 per jam dalam sehari") :
-        st.write('Dilihat dari grafik diatas, terlihat dari proses pengiriman sudah sangat baik, terdapat 96.478 paket terkirim, dan perbandingannya sangat signifikan dibanding dengan proses yang lain. namun perlu dianalisa kembali untuk pengirimannya apakah sudah tepat waktu atau tidak')
-      st.write('<hr>', unsafe_allow_html=True) #hr Garis Pemisah
-      Air_Pollution_Hourly_Umum(data_bersih,"SO2")
-      with st.expander("Penjelasan Tingkat PM2.5 per jam dalam sehari") :
-        st.write('Dilihat dari grafik diatas, terlihat dari proses pengiriman sudah sangat baik, terdapat 96.478 paket terkirim')
-      st.write('<hr>', unsafe_allow_html=True) #hr Garis Pemisah
-      Air_Pollution_Hourly_Umum(data_bersih,"O3")
-      with st.expander("Penjelasan Tingkat PM2.5 per jam dalam sehari") :
-        st.write('Dilihat dari grafik diatas, terlihat dari proses pengiriman sudah sangat baik, terdapat 96.478 paket terkirim')
-      st.write('<hr>', unsafe_allow_html=True) #hr Garis Pemisah
-      Air_Pollution_Hourly_Umum(data_bersih,"NO2")
-      with st.expander("Penjelasan Tingkat PM2.5 per jam dalam sehari") :
-        st.write('Dilihat dari grafik diatas, terlihat dari proses pengiriman sudah sangat baik, terdapat 96.478 paket terkirim')
-      st.write('<hr>', unsafe_allow_html=True) #hr Garis Pemisah
-      pilih_perbandingan2 = st.radio(
-            "Pilihan perbandingan",
-            ("Satu Tahun Terakhir","Satu Bulan Terakhir" , "semua konsentrasi ")
+    with st.expander("See explanation"):
+        st.write(
+    """Untuk menentukan tingkat polusi udara saya mengambil berdasarkan PM2.5. PM2.5 sebuah istilah yang digunakan untuk mengukur partikel halus di udara, yang memiliki diameter kurang dari atau sama dengan 2.5 mikrometer. Partikel ini dapat berasal dari berbagai sumber, termasuk emisi kendaraan bermotor, industri, pembakaran biomassa, dan debu.
+    Seperti ya dilihat berdasarkan grafik bahwa tingkat polusi tertinggi di station Aotizhongxin biasa terjadi di bulan pergantian tahun atau bulan awal awal tahun.
+    """
         )
-      
-    if pilih_perbandingan2 == "Satu Tahun Terakhir":
-            st.write("Satu Tahun Terakhir")
-            # Air_Pollution_Hour_PM25(data_bersih)
+        
 
-            st.write("qq")
-            Air_Pollution_One_Year(data_bersih_hourly,"PM10")
-            Air_Pollution_One_Year(data_bersih_hourly,"PM2.5")
-            Air_Pollution_One_Year(data_bersih_hourly,"SO2")
-            Air_Pollution_One_Year(data_bersih_hourly,"O3")
-            Air_Pollution_One_Year(data_bersih_hourly,"NO2")
+def perbedaan_polusi(data):
+    # Analisis korelasi
+    correlation_matrix = data[['PM2.5', 'TEMP', 'PRES', 'WSPM']].corr()
 
+    # Visualisasi matriks korelasi menggunakan heatmap
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=.5, ax=ax)
+    plt.title('Matriks Korelasi antara Variabel Cuaca dan PM2.5')
+    st.pyplot(plt)
 
-            
+def korelasiSO(data):
 
-    elif pilih_perbandingan2 == "Satu Bulan Terakhir":
-            st.write("Perbandingan hanya selama satu bulan terakhir")
-            Air_Pollution_Last_Month(data_bersih_hourly,"PM10")
-            Air_Pollution_Last_Month(data_bersih_hourly,"PM2.5")
-            Air_Pollution_Last_Month(data_bersih_hourly,"SO2")
-            Air_Pollution_Last_Month(data_bersih_hourly,"O3")
-            Air_Pollution_Last_Month(data_bersih_hourly,"NO2")
-         
+    quest3 = data[['TEMP','PRES','WSPM','CO']]
+
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(quest3.corr(), cmap='Blues', annot=True, fmt='.2f')
+    plt.suptitle("Korelasi kandungan CO", y=1.02)
+    plt.show()
+    st.pyplot(plt)
+
+def korelasiSO2(data):
+    quest4 = data[['TEMP','PRES','WSPM','SO2']]
+
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(quest4.corr(), cmap='Blues', annot=True, fmt='.2f')
+    plt.suptitle("Korelasi kandungan SO2", y=1.02)
+    plt.show()
+    st.pyplot(plt)
+
+def korelasiNO2(data):
+    quest6 = data[['TEMP','PRES','WSPM','O3']]
+
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(quest6.corr(), cmap='Blues', annot=True, fmt='.2f')
+    plt.suptitle("Korelasi kandungan O3", y=1.02)
+    plt.show()
+    st.pyplot(plt)
+    with st.expander("See explanation"):
+        st.write(
+        """ 
+        1. Terdapat korelasi yang signifikan pada kandungan CO dan O3, dengan nilai korelasi yang lebih besar dari 0.1. Hal ini menunjukkan adanya hubungan positif antara kandungan CO2 dan O3.
+        2. Korelasi yang signifikan juga ditemukan antara kandungan SO2 dan NO2, dengan nilai korelasi yang lebih besar dari 0.1. Ini mungkin menunjukkan adanya polusi udara yang berasal dari sumber yang sama atau proses yang serupa yang menghasilkan kedua zat tersebut.
+        3. Namun, tidak ada korelasi yang signifikan yang ditemukan antara kandungan CO2 dan SO2, serta antara kandungan CO2 dan NO2. Hal ini menunjukkan bahwa meskipun kedua pasangan tersebut memiliki nilai korelasi di atas 0.1, hubungan antara kandungan CO2 dan SO2 atau NO2 tidak cukup kuat untuk dianggap signifikan.
+        """
+    )
+    with st.expander("Conclution"):
+        st.write(
+        """ 
+            Semua Kandungan terhadap CO, SO2, dan O3 memiliki korelasi tinggi dikarenakan nilai nya > 0.1
+        """
+    )
+
+df_Data = load_data("https://raw.githubusercontent.com/MFaridN/UAS_PDSD/main/PRSA_Data_Aotizhongxin_20130301-20170228.csv")
+data_clean = cleaning_data (df_Data)
+data_clean_wd = cleaning_data_wd (df_Data)
+
+with st.sidebar:
+    selected = option_menu('Menu', ['Dashboard'],
+                           icons=["easel2", "graph-up"],
+                           menu_icon="cast",
+                           default_index=0)
+if (selected == 'Dashboard') :
+    st.header(f"Analisis Polusi Udara Aotizhongxin")
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Pertanyaan 1", "Pertanyaan 2", "Pertanyaan 3", "Pertanyaan 4", "Pertanyaan 5","Pertanyaan 6"])
 
     with tab1:
         st.subheader('10122256 - Muhammad Farid Nurrahman')
@@ -307,10 +190,3 @@ if (menu == "Dashboard"):
     with tab6:
         st.header("Tab 3")
         st.image("https://static.streamlit.io/examples/owl.jpg")
-
-    with tab2 :
-      st.header("Klentit tab 2")
-    #   Air_Pollution_one_last_month(data_bersih)
-
-
-#Main view end
