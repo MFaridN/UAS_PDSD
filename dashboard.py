@@ -101,60 +101,7 @@ def pola_curah_hujan (data):
     Seperti ya dilihat berdasarkan grafik bahwa tingkat polusi tertinggi di station Aotizhongxin biasa terjadi di bulan pergantian tahun atau bulan awal awal tahun.
     """
         )
-        
-
-def perbedaan_polusi(data):
-    # Analisis korelasi
-    correlation_matrix = data[['PM2.5', 'TEMP', 'PRES', 'WSPM']].corr()
-
-    # Visualisasi matriks korelasi menggunakan heatmap
-    fig, ax = plt.subplots(figsize=(10, 8))
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=.5, ax=ax)
-    plt.title('Matriks Korelasi antara Variabel Cuaca dan PM2.5')
-    st.pyplot(plt)
-
-def korelasiSO(data):
-
-    quest3 = data[['TEMP','PRES','WSPM','CO']]
-
-    plt.figure(figsize=(8, 5))
-    sns.heatmap(quest3.corr(), cmap='Blues', annot=True, fmt='.2f')
-    plt.suptitle("Korelasi kandungan CO", y=1.02)
-    plt.show()
-    st.pyplot(plt)
-
-def korelasiSO2(data):
-    quest4 = data[['TEMP','PRES','WSPM','SO2']]
-
-    plt.figure(figsize=(8, 5))
-    sns.heatmap(quest4.corr(), cmap='Blues', annot=True, fmt='.2f')
-    plt.suptitle("Korelasi kandungan SO2", y=1.02)
-    plt.show()
-    st.pyplot(plt)
-
-def korelasiNO2(data):
-    quest6 = data[['TEMP','PRES','WSPM','O3']]
-
-    plt.figure(figsize=(8, 5))
-    sns.heatmap(quest6.corr(), cmap='Blues', annot=True, fmt='.2f')
-    plt.suptitle("Korelasi kandungan O3", y=1.02)
-    plt.show()
-    st.pyplot(plt)
-    with st.expander("See explanation"):
-        st.write(
-        """ 
-        1. Terdapat korelasi yang signifikan pada kandungan CO dan O3, dengan nilai korelasi yang lebih besar dari 0.1. Hal ini menunjukkan adanya hubungan positif antara kandungan CO2 dan O3.
-        2. Korelasi yang signifikan juga ditemukan antara kandungan SO2 dan NO2, dengan nilai korelasi yang lebih besar dari 0.1. Ini mungkin menunjukkan adanya polusi udara yang berasal dari sumber yang sama atau proses yang serupa yang menghasilkan kedua zat tersebut.
-        3. Namun, tidak ada korelasi yang signifikan yang ditemukan antara kandungan CO2 dan SO2, serta antara kandungan CO2 dan NO2. Hal ini menunjukkan bahwa meskipun kedua pasangan tersebut memiliki nilai korelasi di atas 0.1, hubungan antara kandungan CO2 dan SO2 atau NO2 tidak cukup kuat untuk dianggap signifikan.
-        """
-    )
-    with st.expander("Conclution"):
-        st.write(
-        """ 
-            Semua Kandungan terhadap CO, SO2, dan O3 memiliki korelasi tinggi dikarenakan nilai nya > 0.1
-        """
-    )
-
+    
 df_Data = load_data("https://raw.githubusercontent.com/MFaridN/UAS_PDSD/main/PRSA_Data_Aotizhongxin_20130301-20170228.csv")
 data_clean = cleaning_data (df_Data)
 data_clean_wd = cleaning_data_wd (df_Data)
@@ -169,7 +116,8 @@ if (selected == 'Dashboard') :
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Pertanyaan 1", "Pertanyaan 2", "Pertanyaan 3", "Pertanyaan 4", "Pertanyaan 5","Pertanyaan 6"])
 
     with tab1:
-        st.subheader('10122256 - Muhammad Farid Nurrahman')
+        st.subheader('Muha')
+        st.subheader('Perbandingan Tingkat PM2.5 per Hari')
         Air_Pollution_Day(data_clean)
     with tab2:
         st.header("Tab 2")
@@ -185,7 +133,8 @@ if (selected == 'Dashboard') :
         perbedaan_polusi(data_clean)
 
     with tab5:
-        st.subheader('10122273 - Win Termulo Nova')
+        st.header("10122273 - Win Termulo Nova")
+        st.subheader('Pola Musiman Curah Hujan')
         pola_curah_hujan (data_clean)
     with tab6:
         st.header("Tab 3")
