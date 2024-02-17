@@ -5,6 +5,10 @@ streamlit_option_menu
 requests
 matplotlib
 seaborn
+sklearn.model_selection
+sklearn.linear_model
+sklearn.metrics
+sklearn.ensemble
 statsmodels.api
 sklearn.preprocessing
 sklearn.cluster
