@@ -1,7 +1,9 @@
-numpy
 streamlit
+numpy
 pandas
 streamlit_option_menu
 requests
 matplotlib
 seaborn
+statsmodels
+scikit-learn
