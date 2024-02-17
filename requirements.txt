@@ -4,3 +4,7 @@ pandas
 streamlit_option_menu
 requests
 matplotlib
+seaborn
+statsmodels.api
+sklearn.preprocessing
+sklearn.cluster
