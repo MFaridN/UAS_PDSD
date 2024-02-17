@@ -712,5 +712,3 @@ elif (selected == 'Profile') :
                 - **10122510 - FIKKRY IHZA FACHREZI**
                 """)
    
-    
-        
