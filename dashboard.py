@@ -110,11 +110,8 @@ def pola_curah_hujan (data):
     Seperti ya dilihat berdasarkan grafik bahwa tingkat polusi tertinggi di station Aotizhongxin biasa terjadi di bulan pergantian tahun atau bulan awal awal tahun.
     """
         )
-        
 
 def perbedaan_polusi(data):
-    st.subheader('10122510 - Fikkry Ihza Fachrezi')
-    # st.subheader('Grafik Tingkat Polusi Udara')
     # Table tingkat polusi udara
     data['tanggal'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d')
     st.subheader('Tabel Tahun dan Rata-rata Tingkat Polusi Udara Pertahun')
