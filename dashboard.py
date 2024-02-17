@@ -103,6 +103,48 @@ def pola_curah_hujan (data):
         
 
 def perbedaan_polusi(data):
+    st.subheader('10122510 - Fikkry Ihza Fachrezi')
+    # st.subheader('Grafik Tingkat Polusi Udara')
+    # Table tingkat polusi udara
+    data['tanggal'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d')
+    st.subheader('Tabel Tahun dan Rata-rata Tingkat Polusi Udara Pertahun')
+    yearly_pm25_avg = data.groupby(data['tanggal'].dt.year)['PM2.5'].mean().reset_index()
+    yearly_pm10_avg = data.groupby(data['tanggal'].dt.year)['PM10'].mean().reset_index()
+    yearly_co_avg = data.groupby(data['tanggal'].dt.year)['CO'].mean().reset_index()
+    yearly_no2_avg = data.groupby(data['tanggal'].dt.year)['NO2'].mean().reset_index()
+    yearly_so2_avg = data.groupby(data['tanggal'].dt.year)['SO2'].mean().reset_index()
+    yearly_o3_avg = data.groupby(data['tanggal'].dt.year)['O3'].mean().reset_index()
+    yearly_pm_avg = pd.merge(yearly_pm25_avg, pd.merge(yearly_pm10_avg, pd.merge(yearly_co_avg, pd.merge(yearly_no2_avg, pd.merge(yearly_so2_avg, yearly_o3_avg, on='tanggal', how='outer'), on='tanggal', how='outer'), on='tanggal', how='outer'), on='tanggal', how='outer'), on='tanggal', how='outer')
+    yearly_pm_avg.columns = ['Tahun', 'Rata-rata PM2.5', 'Rata-rata PM10', 'Rata-rata CO', 'Rata-rata NO2', 'Rata-rata SO2', 'Rata-rata O3']
+
+    yearly_pm_avg = yearly_pm_avg.applymap(lambda x: '{:.0f}'.format(x) if isinstance(x, (int, float)) else x)
+    st.write(yearly_pm_avg)
+
+
+    with st.expander("Lihat Penjelasan"):
+        st.write(
+            """
+            **Tingkat Polusi Udara di Aotizhongxin (2013-2017)**
+
+            Tabel di atas menunjukkan rata-rata tingkat polusi udara di stasiun Aotizhongxin selama periode 2013 hingga 2017. Parameter yang diukur meliputi PM2.5, PM10, CO, NO2, SO2, dan O3.
+
+            - **PM2.5 (Partikulat Matter 2.5):** Merupakan partikel halus dengan diameter kurang dari 2.5 mikrometer. Peningkatan nilai PM2.5 dapat memiliki dampak kesehatan yang signifikan.
+
+            - **PM10 (Partikulat Matter 10):** Merupakan partikel dengan diameter kurang dari 10 mikrometer. Seperti PM2.5, PM10 dapat mempengaruhi kesehatan manusia.
+
+            - **CO (Carbon Monoxide):** Gas beracun yang dapat dihasilkan oleh pembakaran bahan bakar fosil. Peningkatan CO dapat menjadi indikator emisi polusi udara dari kendaraan dan industri.
+
+            - **NO2 (Nitrogen Dioxide):** Gas yang berasal dari pembakaran bahan bakar dan aktivitas industri. Tingkat NO2 dapat memberikan informasi tentang kualitas udara dan dampaknya pada kesehatan manusia.
+
+            - **SO2 (Sulfur Dioxide):** Gas yang dihasilkan oleh pembakaran bahan bakar fosil yang mengandung belerang. SO2 dapat menyebabkan iritasi pada saluran pernapasan.
+
+            - **O3 (Ozone):** Gas yang dapat memiliki dampak positif di atmosfera atas tetapi dapat menjadi polutan di permukaan bumi. Tingkat O3 dapat berkontribusi pada polusi udara dan masalah pernapasan.
+
+            Dari tabel, dapat diamati bahwa tingkat PM2.5 tertinggi terjadi pada tahun 2017, sementara CO, NO2, dan O3 juga menunjukkan variasi selama periode tersebut. Pemahaman tentang pola ini dapat membantu dalam merencanakan langkah-langkah pengelolaan lingkungan untuk meningkatkan kualitas udara di wilayah tersebut.
+            """
+        )
+
+    st.subheader('Grafik Perbedaan Tingkat Polusi')
     # Analisis korelasi
     correlation_matrix = data[['PM2.5', 'TEMP', 'PRES', 'WSPM']].corr()
 
@@ -111,6 +153,21 @@ def perbedaan_polusi(data):
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=.5, ax=ax)
     plt.title('Matriks Korelasi antara Variabel Cuaca dan PM2.5')
     st.pyplot(plt)
+
+    with st.expander("Lihat Penjelasan"):
+        st.write(
+            """
+            Matriks korelasi di atas menggambarkan hubungan statistik antara variabel cuaca (TEMP, PRES, WSPM) dan tingkat polusi udara PM2.5.
+            
+            - **Korelasi Positif:** Nilai mendekati 1 menunjukkan hubungan positif, di mana kenaikan satu variabel berhubungan dengan kenaikan variabel lainnya.
+            
+            - **Korelasi Negatif:** Nilai mendekati -1 menunjukkan hubungan negatif, di mana kenaikan satu variabel berhubungan dengan penurunan variabel lainnya.
+            
+            - **Korelasi Nol:** Nilai mendekati 0 menunjukkan tidak adanya korelasi linier antara dua variabel.
+            
+            Dari grafik, kita dapat melihat seberapa kuat hubungan antara variabel-variabel tersebut. Misalnya, korelasi positif yang signifikan antara TEMP (suhu) dan PM2.5 mungkin menunjukkan bahwa peningkatan suhu berkaitan dengan peningkatan PM2.5.
+            """
+        )
 
 def korelasiSO(data):
 
@@ -179,8 +236,7 @@ if (selected == 'Dashboard') :
         korelasiSO2(data_clean)
         korelasiNO2(data_clean)
     with tab4:
-        st.subheader('10122510 - Fikkry Ihza Fachrezi')
-        st.subheader('Perbedaan Tingkat Polusi')
+
         perbedaan_polusi(data_clean)
 
     with tab5:
