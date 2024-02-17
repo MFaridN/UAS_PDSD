@@ -17,287 +17,209 @@ def load_data(url) :
     df = pd.read_csv(url)
     return df
 
+#pembersihn data
 def cleaning_data (df_Data):
-    # Copy DataFrame to avoid modifying original data
     data = df_Data.copy()
     
-    # Fill missing values with forward fill method
     data.fillna(method='ffill', inplace=True)
     
-    # Drop non-numeric columns
     non_numeric_columns = data.select_dtypes(exclude=['number']).columns
     data = data.drop(columns=non_numeric_columns)
     
     return data
 
 def cleaning_data_wd (df_Data):
-    # Copy DataFrame to avoid modifying original data
     data_wd = df_Data.copy()
     
-    # Fill missing values with forward fill method
     data_wd.fillna(method='ffill', inplace=True)
-    data_wd['tanggal_jam'] = pd.to_datetime(df_Data[['year', 'month', 'day','hour']], format='%Y-%m-%d %H:%M:%S')
     return data_wd
 
 def cleaning_data_hourly (df_Data):
-    # Copy DataFrame to avoid modifying original data
     data_hourly = df_Data.copy()
     
-    # Fill missing values with forward fill method
     data_hourly.fillna(method='ffill', inplace=True)
     data_hourly['tanggal_jam'] = pd.to_datetime(df_Data[['year', 'month', 'day','hour']], format='%Y-%m-%d %H:%M:%S')
     return data_hourly
+#end pembersihn data
+
+#Proses
+#Proses Tab 1
+#pertanyaan 1
+def daily_air_pollution_comparison(data):
+    data['tanggal'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d')
+
+    # Grafik Perbandingan Tingkat PM2.5 per Hari di Aotizhongxin
+    st.subheader('Grafik Perbandingan Tingkat PM2.5 per Hari')
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.lineplot(data=data, x='tanggal', y='PM2.5', ax=ax, label='PM2.5')
+    ax.set_xlabel('Tanggal')
+    ax.set_ylabel('Rata-rata Tingkat PM2.5')
+    ax.set_title('Perbandingan Tingkat PM2.5 per Hari di Aotizhongxin')
+    st.pyplot(fig)
+
+def monthly_air_pollution_comparison(data):
+    # Grafik Distribusi Tingkat PM2.5 per Bulan
+    st.subheader('Distribusi Tingkat PM2.5 per Bulan')
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.boxplot(data=data, x='month', y='PM2.5', ax=ax)
+    ax.set_xlabel('Bulan')
+    ax.set_ylabel('Tingkat PM2.5')
+    ax.set_title('Distribusi Tingkat PM2.5 per Bulan')
+    st.pyplot(fig)
     
-def Air_Pollution_Day(data):
-    # Convert date columns to datetime
+def yearly_air_pollution_comparison(data):
     data['tanggal'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d')
     
-
-    # Menampilkan tabel dengan tahun dan data rata-rata PM2.5 per tahun
-    st.subheader('Tabel Tahun dan Rata-rata PM2.5 Pertahun')
+    # Grafik Perbandingan Rata-rata PM2.5 per Tahun
+    st.subheader('Grafik Perbandingan Rata-rata PM2.5 per Tahun')
     yearly_pm25_avg = data.groupby(data['tanggal'].dt.year)['PM2.5'].mean().reset_index()
     yearly_pm25_avg.columns = ['Tahun', 'Rata-rata PM2.5']
-    
-    # Menghilangkan koma dari angka dalam tabel
-    yearly_pm25_avg = yearly_pm25_avg.applymap(lambda x: '{:.0f}'.format(x) if isinstance(x, (int, float)) else x)
-    st.write(yearly_pm25_avg)
-    
-    # Plotting
-    st.subheader('Grafik Perbandingan Tingkat PM2.5 per Hari di Aotizhongxin')
-    plt.figure(figsize=(12, 6))
-    sns.set_theme()
-    plt.plot(data['tanggal'], data['PM2.5'], label='PM2.5')
-    plt.xlabel('Tanggal')
-    plt.ylabel('Rata-rata Tingkat PM2.5')
-    plt.title('Perbandingan Tingkat PM2.5 per Hari di Aotizhongxin')
-    plt.legend()
-    st.pyplot(plt)
-    
-    # Penjelasan
-    with st.expander("Lihat Penjelasan"):
-        st.write(
-    """Untuk menentukan tingkat polusi udara, digunakan PM2.5. PM2.5 adalah partikel halus di udara dengan diameter kurang dari atau sama dengan 2.5 mikrometer. Partikel ini berasal dari berbagai sumber, termasuk emisi kendaraan bermotor, industri, pembakaran biomassa, dan debu.
-    Dari grafik, dapat dilihat bahwa tingkat polusi udara tertinggi di stasiun Aotizhongxin biasanya terjadi pada bulan-bulan pergantian tahun atau awal tahun.
-    """
-        )
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(data=yearly_pm25_avg, x='Tahun', y='Rata-rata PM2.5', palette='coolwarm', ax=ax)
+    ax.set_xlabel('Tahun')
+    ax.set_ylabel('Rata-rata PM2.5')
+    ax.set_title('Grafik Perbandingan Rata-rata PM2.5 per Tahun')
+    st.pyplot(fig)
 
-    st.subheader('Perbandingan Data Kualitas Udara di Aotizhongxin')
+def air_pollution_daily_comparison(data):
+    # Perbandingan Tingkat Polusi Udara Harian
+    st.subheader('Perbandingan Tingkat Polusi Udara Harian Berdasarkan PM2.5, PM10, SO2, NO2, CO, O3')
+    
     # Memilih kolom yang akan ditampilkan
-    selected_columns = st.multiselect('Pilih kolom', ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3', 'TEMP', 'PRES', 'DEWP', 'RAIN', 'wd', 'WSPM'])
-
+    selected_columns = st.multiselect('Pilih kolom', ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3'])
+    st.caption("""
+                - PM2.5: Particulate Matter 2.5 (Partikel Udara 2.5)
+                - PM10: Particulate Matter 10 (Partikel Udara 10)
+                - SO2: Sulfur Dioxide (Diosida Belerang)
+                - NO2: Nitrogen Dioxide (Diosida Nitrogen)
+                - CO: Carbon Monoxide (Karbon Monoksida)
+                - O3: Ozone (Ozon)
+                   """)
+    
     # Menampilkan plot perbandingan per hari
     if selected_columns:
         daily_average = data.groupby(data['tanggal'].dt.date).mean()
         st.line_chart(daily_average[selected_columns])
-    
-def Prediksi_PM25(data, model_type='Linear Regression', dataset_size=0.8):
-    st.subheader('Konfigurasi Model dan Dataset')
-
-    #pilih variabel cuaca yang akan digunakan untuk prediksi
-    features = st.multiselect('Pilih variabel cuaca', ['TEMP', 'DEWP', 'WSPM'])
-
-    st.caption('Penggunaan jumlah variabel yang lebih banyak, meningkatkan keakuratan prediksi PM2.5')
-
-    if not features:
-        st.warning('Pilihlah setidaknya satu **variabel cuaca** untuk prediksi PM2.5')
-        return
-    
-    #widget untuk memilih model regresi
-    model_type = st.selectbox('Pilih Model Regresi', ['Linear Regression', 'Random Forest'])
-    if model_type == 'Linear Regression':
-        st.caption('Penggunaan regresi linear memberikan pemahaman yang lebih sederhana dan interpretatif')
+         # Penjelasan
+        with st.expander("Lihat Penjelasan"):
+            st.write("""
+                        PM2.5: Particulate Matter 2.5 (Partikel Udara 2.5): Partikel-partikel kecil dengan diameter kurang dari atau sama dengan 2.5 mikrometer, yang dapat masuk ke dalam saluran pernapasan dan menyebabkan gangguan kesehatan.
+                        
+                        PM10: Particulate Matter 10 (Partikel Udara 10): Partikel-partikel dengan diameter kurang dari atau sama dengan 10 mikrometer, yang juga dapat mempengaruhi kesehatan manusia terutama pada sistem pernapasan.
+                        
+                        SO2: Sulfur Dioxide (Diosida Belerang): Gas yang dihasilkan dari pembakaran bahan bakar fosil yang mengandung belerang, yang dapat menyebabkan iritasi saluran pernapasan dan masalah kesehatan lainnya.
+                        
+                        NO2: Nitrogen Dioxide (Diosida Nitrogen): Gas beracun yang dihasilkan dari pembakaran bahan bakar, yang dapat menyebabkan masalah pernapasan dan memperburuk kondisi seperti asma.
+                        
+                        CO: Carbon Monoxide (Karbon Monoksida): Gas tidak berwarna dan tidak berbau yang dihasilkan dari pembakaran tidak sempurna bahan bakar, yang dapat menyebabkan keracunan CO pada paparan tinggi.
+                        
+                        O3: Ozone (Ozon): Gas yang dihasilkan dari reaksi kimia antara oksida nitrogen dan senyawa organik volatil di bawah sinar matahari, yang dapat menyebabkan iritasi saluran pernapasan dan memperburuk kondisi kesehatan.
+                                """
+                        )
+        
+def main_visualization(data):
+    st.subheader("Perbandingan tingkat pulusi udara berdasarkan PM2.5 ")
+    pilih_perbandingan_waktu = st.radio(
+          "Pilih berdasarkan waktu",
+          ("Per Hari","Per Bulan","Per Tahun")
+      )
+    if (pilih_perbandingan_waktu == "Per Hari"):
+        daily_air_pollution_comparison(data)
+    elif (pilih_perbandingan_waktu == "Per Bulan"):
+        monthly_air_pollution_comparison(data)
     else:
-        st.caption('Penggunaan Regresi Hutan Acak memberikan prediksi yang lebih akurat dalam hubungan yang lebih kompleks dalam data')
+        yearly_air_pollution_comparison(data)
+     # Penjelasan
+    with st.expander("Lihat Penjelasan"):
+        st.write(
+            """Untuk menentukan tingkat polusi udara, digunakan PM2.5. PM2.5 adalah partikel halus di udara dengan diameter kurang dari atau sama dengan 2.5 mikrometer. Partikel ini berasal dari berbagai sumber, termasuk emisi kendaraan bermotor, industri, pembakaran biomassa, dan debu.
+            """
+        )
+    st.write('<hr>', unsafe_allow_html=True)
+    air_pollution_daily_comparison(data)
 
-    #widget untuk mengatur ukuran dataset pengujian
-    dataset_size = st.slider('Ukuran Dataset Pengujian', 0.1, 0.9, 0.8, step=0.05)
-    st.caption('Ukuran dataset sangat mempengaruhi dari hasil prediksi')
-
-    
-    #pilih variabel target (misalnya, PM2.5)
-    target = 'PM2.5'
-    #pisahkan data menjadi dataset latihan dan pengujian
-    X_train, X_test, y_train, y_test = train_test_split(data[features], data[target], test_size=dataset_size, random_state=42)
-    
-    #inisialisasi model
-    if model_type == 'Linear Regression':
-        model = LinearRegression()
-    else:
-        model = RandomForestRegressor()
-    
-    #latih model pada dataset latihan
-    model.fit(X_train, y_train)
-    
-    #lakukan prediksi pada dataset pengujian
-    y_pred = model.predict(X_test)
-    
-    #hitung Mean Squared Error sebagai metrik evaluasi
-    mse = mean_squared_error(y_test, y_pred)
-    st.write(f'Mean Squared Error: {mse}')
-
-    # Visualisasi hasil prediksi
+#pertanyaan 2        
+def air_pollutant_temperature_comparison(data):
+    # Perbandingan Tingkat SO2, NO2, dan O3 pada Hari dengan Suhu Tinggi dan Rendah
+    st.subheader('Perbandingan Tingkat SO2, NO2, dan O3 pada Hari dengan Suhu Tinggi dan Rendah')
     fig, ax = plt.subplots(figsize=(10, 6))
-    #plot data aktual
-    ax.scatter(X_test[features[0]], y_test, label='Actual', alpha=0.8, color='lightblue')
-    # Plot data prediksi
-    ax.scatter(X_test[features[0]], y_pred, label='Predicted', alpha=0.5, color='lightcoral')
-    #atur label
-    ax.set_xlabel('(' + ', '.join(features)+')')
-    ax.set_ylabel('Tingkat PM2.5')
-    ax.set_title('Prediksi Tingkat PM2.5 Berdasarkan ' + ', '.join(features))
-    ax.legend()
-    
+    sns.boxplot(data=data, x='TEMP', y='SO2', hue='TEMP', palette='coolwarm', ax=ax)
+    sns.boxplot(data=data, x='TEMP', y='NO2', hue='TEMP', palette='coolwarm', ax=ax)
+    sns.boxplot(data=data, x='TEMP', y='O3', hue='TEMP', palette='coolwarm', ax=ax)
+    ax.set_xlabel('Suhu (Binned)')
+    ax.set_ylabel('Tingkat Polutan')
+    ax.set_title('Perbandingan Tingkat SO2, NO2, dan O3 pada Hari dengan Suhu Tinggi dan Rendah')
+    ax.legend(title='TEMP')
     st.pyplot(fig)
 
-    with st.expander('Penjelasan Tingkat Prediksi PM2.5'):
-        st.write("Prediksi tingkat PM2.5 dapat dilakukan dengan parameter TEMP, DEWP, dan WSPM. Bukan hanya itu, untuk memprediksi tingkat PM2.5 dapat menggunakan"
-                + "variabel lain juga. Penggunaan model regresi akan menentukan hasil dari prediksi. Jika menggunakan **Regresi Linear** maka dapat memberikan pemahaman"
-                + "yang lebih sederhana dan interpretatif, sedangkan jika menggunakan **Regresi Hutan Acak** akan memberikan prediksi yang **lebih akurat**"
-                + "dalam hubungan yang lebih kompleks dalam data. Semua itu bergantung dari kebutuhan pengguna dan juga dapat dilakukan eksperimen (uji coba) "
-                + "dan evaluasi kinerja pada data model yang lebih spesifik")
-        
-    st.caption("TEMP : Temprature (Suhu)")
-    st.caption("DEWP : Dew Point (Titik Embun)")
-    st.caption("WSPM : Wetland Surface Water Model (Aliran & Tinggi Air)")
-
-def pola_curah_hujan (data):
-    # Perbandingan per bulan (atau sesuaikan dengan periode waktu yang diinginkan)
-    # Buat kolom 'bulan'
-    data['bulan'] = data['tanggal'].dt.strftime('%Y-%m')
-    # Perbandingan Per Bulan
-    monthly_comparison = data.groupby('bulan').mean()
-    # Ekstrak bulan dari kolom tanggal
-    data['bulan'] = data['tanggal'].dt.month
+    # Grafik Tingkat Polutan Udara vs Suhu
+    st.title('Tingkat Polutan Udara vs Suhu')
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.scatterplot(data=data, x='TEMP', y='PM2.5', hue='TEMP', palette='coolwarm', ax=ax)
+    ax.set_xlabel('Suhu (°C)')
+    ax.set_ylabel('Tingkat PM2.5')
+    ax.set_title('Tingkat Polutan Udara vs Suhu')
+    st.pyplot(fig)
     
-    # Perbandingan rata-rata curah hujan per bulan
-    monthly_rain_comparison = data.groupby('bulan')['RAIN'].mean()
+# Filter data berdasarkan suhu
+def filter_data_by_temperature(data, temperature_threshold):
+    data_rendah = data[data['TEMP'] <= temperature_threshold]
+    data_tinggi = data[data['TEMP'] > temperature_threshold]
+    return data_rendah, data_tinggi
+
+# Hitung rata-rata tingkat SO2, NO2, dan O3
+def calculate_average_pollutants(data):
+    rata_rata_so2 = data['SO2'].mean()
+    rata_rata_no2 = data['NO2'].mean()
+    rata_rata_o3 = data['O3'].mean()
+    return rata_rata_so2, rata_rata_no2, rata_rata_o3
+
+def visualization_temp_air(data):
+    st.subheader('Tingkat SO2, NO2, dan O3 Sesuai Tinggi dan Rendah Suhu')
+    # Slider untuk memilih suhu batas
+    temperature_threshold = st.slider('Pilih Suhu Batas', min_value=0, max_value=40, value=25, step=1)
     
-    # Visualisasi pola musiman curah hujan
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x=monthly_rain_comparison.index, y=monthly_rain_comparison)
-    plt.xlabel('Bulan')
-    plt.ylabel('Rata-rata Curah Hujan')
-    plt.title('Pola Musiman Curah Hujan')
-    st.pyplot(plt)
-    with st.expander("See explanation"):
-        st.write(
-    """Untuk menentukan tingkat polusi udara saya mengambil berdasarkan PM2.5. PM2.5 sebuah istilah yang digunakan untuk mengukur partikel halus di udara, yang memiliki diameter kurang dari atau sama dengan 2.5 mikrometer. Partikel ini dapat berasal dari berbagai sumber, termasuk emisi kendaraan bermotor, industri, pembakaran biomassa, dan debu.
-    Seperti ya dilihat berdasarkan grafik bahwa tingkat polusi tertinggi di station Aotizhongxin biasa terjadi di bulan pergantian tahun atau bulan awal awal tahun.
-    """
-        )
+    # Filter data berdasarkan suhu
+    data_rendah, data_tinggi = filter_data_by_temperature(data, temperature_threshold)
+    
+    # Hitung rata-rata tingkat polutan
+    rata_rata_so2_rendah, rata_rata_no2_rendah, rata_rata_o3_rendah = calculate_average_pollutants(data_rendah)
+    rata_rata_so2_tinggi, rata_rata_no2_tinggi, rata_rata_o3_tinggi = calculate_average_pollutants(data_tinggi)
+    
+    # Buat grafik
+    fig, ax = plt.subplots()
+    ax.plot([0, 1], [rata_rata_so2_rendah, rata_rata_so2_tinggi], label='SO2')
+    ax.plot([0, 1], [rata_rata_no2_rendah, rata_rata_no2_tinggi], label='NO2')
+    ax.plot([0, 1], [rata_rata_o3_rendah, rata_rata_o3_tinggi], label='O3')
 
-def perbedaan_polusi(data):
-    # Table tingkat polusi udara
-    data['tanggal'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d')
-    st.subheader('Tabel Tahun dan Rata-rata Tingkat Polusi Udara Pertahun')
-    yearly_pm25_avg = data.groupby(data['tanggal'].dt.year)['PM2.5'].mean().reset_index()
-    yearly_pm10_avg = data.groupby(data['tanggal'].dt.year)['PM10'].mean().reset_index()
-    yearly_co_avg = data.groupby(data['tanggal'].dt.year)['CO'].mean().reset_index()
-    yearly_no2_avg = data.groupby(data['tanggal'].dt.year)['NO2'].mean().reset_index()
-    yearly_so2_avg = data.groupby(data['tanggal'].dt.year)['SO2'].mean().reset_index()
-    yearly_o3_avg = data.groupby(data['tanggal'].dt.year)['O3'].mean().reset_index()
-    yearly_pm_avg = pd.merge(yearly_pm25_avg, pd.merge(yearly_pm10_avg, pd.merge(yearly_co_avg, pd.merge(yearly_no2_avg, pd.merge(yearly_so2_avg, yearly_o3_avg, on='tanggal', how='outer'), on='tanggal', how='outer'), on='tanggal', how='outer'), on='tanggal', how='outer'), on='tanggal', how='outer')
-    yearly_pm_avg.columns = ['Tahun', 'Rata-rata PM2.5', 'Rata-rata PM10', 'Rata-rata CO', 'Rata-rata NO2', 'Rata-rata SO2', 'Rata-rata O3']
-
-    yearly_pm_avg = yearly_pm_avg.applymap(lambda x: '{:.0f}'.format(x) if isinstance(x, (int, float)) else x)
-    st.write(yearly_pm_avg)
-
-
+    # Atur label
+    ax.set_xlabel('Suhu (°C)')
+    ax.set_ylabel('Tingkat Polutan Udara (μg/m³)')
+    ax.set_title('Tingkat Polutan Udara vs Suhu')
+    ax.legend()
+    st.pyplot(fig)
     with st.expander("Lihat Penjelasan"):
-        st.write(
-            """
-            **Tingkat Polusi Udara di Aotizhongxin (2013-2017)**
+            st.write("""
+                        SO2: Sulfur Dioxide (Diosida Belerang): Gas yang dihasilkan dari pembakaran bahan bakar fosil yang mengandung belerang, yang dapat menyebabkan iritasi saluran pernapasan dan masalah kesehatan lainnya.
+                        
+                        NO2: Nitrogen Dioxide (Diosida Nitrogen): Gas beracun yang dihasilkan dari pembakaran bahan bakar, yang dapat menyebabkan masalah pernapasan dan memperburuk kondisi seperti asma.
+                        
+                        O3: Ozone (Ozon): Gas yang dihasilkan dari reaksi kimia antara oksida nitrogen dan senyawa organik volatil di bawah sinar matahari, yang dapat menyebabkan iritasi saluran pernapasan dan memperburuk kondisi kesehatan.
+                                """
+                        )
+    st.caption("""
+                - PM2.5: Particulate Matter 2.5 (Partikel Udara 2.5)
+                - PM10: Particulate Matter 10 (Partikel Udara 10)
+                - SO2: Sulfur Dioxide (Diosida Belerang)
+                - NO2: Nitrogen Dioxide (Diosida Nitrogen)
+                - CO: Carbon Monoxide (Karbon Monoksida)
+                - O3: Ozone (Ozon)
+                   """)
 
-            Tabel di atas menunjukkan rata-rata tingkat polusi udara di stasiun Aotizhongxin selama periode 2013 hingga 2017. Parameter yang diukur meliputi PM2.5, PM10, CO, NO2, SO2, dan O3.
-
-            - **PM2.5 (Partikulat Matter 2.5):** Merupakan partikel halus dengan diameter kurang dari 2.5 mikrometer. Peningkatan nilai PM2.5 dapat memiliki dampak kesehatan yang signifikan.
-
-            - **PM10 (Partikulat Matter 10):** Merupakan partikel dengan diameter kurang dari 10 mikrometer. Seperti PM2.5, PM10 dapat mempengaruhi kesehatan manusia.
-
-            - **CO (Carbon Monoxide):** Gas beracun yang dapat dihasilkan oleh pembakaran bahan bakar fosil. Peningkatan CO dapat menjadi indikator emisi polusi udara dari kendaraan dan industri.
-
-            - **NO2 (Nitrogen Dioxide):** Gas yang berasal dari pembakaran bahan bakar dan aktivitas industri. Tingkat NO2 dapat memberikan informasi tentang kualitas udara dan dampaknya pada kesehatan manusia.
-
-            - **SO2 (Sulfur Dioxide):** Gas yang dihasilkan oleh pembakaran bahan bakar fosil yang mengandung belerang. SO2 dapat menyebabkan iritasi pada saluran pernapasan.
-
-            - **O3 (Ozone):** Gas yang dapat memiliki dampak positif di atmosfera atas tetapi dapat menjadi polutan di permukaan bumi. Tingkat O3 dapat berkontribusi pada polusi udara dan masalah pernapasan.
-
-            Dari tabel, dapat diamati bahwa tingkat PM2.5 tertinggi terjadi pada tahun 2017, sementara CO, NO2, dan O3 juga menunjukkan variasi selama periode tersebut. Pemahaman tentang pola ini dapat membantu dalam merencanakan langkah-langkah pengelolaan lingkungan untuk meningkatkan kualitas udara di wilayah tersebut.
-            """
-        )
-
-    st.subheader('Grafik Perbedaan Tingkat Polusi')
-    # Analisis korelasi
-    correlation_matrix = data[['PM2.5', 'TEMP', 'PRES', 'WSPM']].corr()
-
-    # Visualisasi matriks korelasi menggunakan heatmap
-    fig, ax = plt.subplots(figsize=(10, 8))
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=.5, ax=ax)
-    plt.title('Matriks Korelasi antara Variabel Cuaca dan PM2.5')
-    st.pyplot(plt)
-
-    with st.expander("Lihat Penjelasan"):
-        st.write(
-            """
-            Matriks korelasi di atas menggambarkan hubungan statistik antara variabel cuaca (TEMP, PRES, WSPM) dan tingkat polusi udara PM2.5.
-            
-            - **Korelasi Positif:** Nilai mendekati 1 menunjukkan hubungan positif, di mana kenaikan satu variabel berhubungan dengan kenaikan variabel lainnya.
-            
-            - **Korelasi Negatif:** Nilai mendekati -1 menunjukkan hubungan negatif, di mana kenaikan satu variabel berhubungan dengan penurunan variabel lainnya.
-            
-            - **Korelasi Nol:** Nilai mendekati 0 menunjukkan tidak adanya korelasi linier antara dua variabel.
-            
-            Dari grafik, kita dapat melihat seberapa kuat hubungan antara variabel-variabel tersebut. Misalnya, korelasi positif yang signifikan antara TEMP (suhu) dan PM2.5 mungkin menunjukkan bahwa peningkatan suhu berkaitan dengan peningkatan PM2.5.
-            """
-        )
-
-def korelasiSO(data):
-
-    quest3 = data[['TEMP','PRES','WSPM','CO']]
-
-    plt.figure(figsize=(8, 5))
-    sns.heatmap(quest3.corr(), cmap='Blues', annot=True, fmt='.2f')
-    plt.suptitle("Korelasi kandungan CO", y=1.02)
-    plt.show()
-    st.pyplot(plt)
-
-def korelasiSO2(data):
-    quest4 = data[['TEMP','PRES','WSPM','SO2']]
-
-    plt.figure(figsize=(8, 5))
-    sns.heatmap(quest4.corr(), cmap='Blues', annot=True, fmt='.2f')
-    plt.suptitle("Korelasi kandungan SO2", y=1.02)
-    plt.show()
-    st.pyplot(plt)
-
-def korelasiNO2(data):
-    quest6 = data[['TEMP','PRES','WSPM','O3']]
-
-    plt.figure(figsize=(8, 5))
-    sns.heatmap(quest6.corr(), cmap='Blues', annot=True, fmt='.2f')
-    plt.suptitle("Korelasi kandungan O3", y=1.02)
-    plt.show()
-    st.pyplot(plt)
-    with st.expander("See explanation"):
-        st.write(
-        """ 
-        1. Terdapat korelasi yang signifikan pada kandungan CO dan O3, dengan nilai korelasi yang lebih besar dari 0.1. Hal ini menunjukkan adanya hubungan positif antara kandungan CO2 dan O3.
-        2. Korelasi yang signifikan juga ditemukan antara kandungan SO2 dan NO2, dengan nilai korelasi yang lebih besar dari 0.1. Ini mungkin menunjukkan adanya polusi udara yang berasal dari sumber yang sama atau proses yang serupa yang menghasilkan kedua zat tersebut.
-        3. Namun, tidak ada korelasi yang signifikan yang ditemukan antara kandungan CO2 dan SO2, serta antara kandungan CO2 dan NO2. Hal ini menunjukkan bahwa meskipun kedua pasangan tersebut memiliki nilai korelasi di atas 0.1, hubungan antara kandungan CO2 dan SO2 atau NO2 tidak cukup kuat untuk dianggap signifikan.
-        """
-    )
-    with st.expander("Conclution"):
-        st.write(
-        """ 
-            Semua Kandungan terhadap CO, SO2, dan O3 memiliki korelasi tinggi dikarenakan nilai nya > 0.1
-        """
-    )
-
+#Proses Tab 2
 # Sepanjang tahun / hari
 def Air_Pollution_Hourly_Umum(data, pollutant):
-    # Convert date columns to datetime
     data['tanggal_jam'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d %H:%M:%S')
-    # Group by date and calculate hourly mean based on the selected pollutant
     hourly_comparison = data.groupby('tanggal_jam')[pollutant].mean()
     
     # Visualisasi per jam
@@ -434,6 +356,213 @@ def visualisasi_regresi(data):
     st.text(results.summary())
 # testing end
 
+#Proses Tab 3
+def korelasiSO(data):
+
+    quest3 = data[['TEMP','PRES','WSPM','CO']]
+
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(quest3.corr(), cmap='Blues', annot=True, fmt='.2f')
+    plt.suptitle("Korelasi kandungan CO", y=1.02)
+    plt.show()
+    st.pyplot(plt)
+
+def korelasiSO2(data):
+    quest4 = data[['TEMP','PRES','WSPM','SO2']]
+
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(quest4.corr(), cmap='Blues', annot=True, fmt='.2f')
+    plt.suptitle("Korelasi kandungan SO2", y=1.02)
+    plt.show()
+    st.pyplot(plt)
+
+def korelasiNO2(data):
+    quest6 = data[['TEMP','PRES','WSPM','O3']]
+
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(quest6.corr(), cmap='Blues', annot=True, fmt='.2f')
+    plt.suptitle("Korelasi kandungan O3", y=1.02)
+    plt.show()
+    st.pyplot(plt)
+    with st.expander("See explanation"):
+        st.write(
+        """ 
+        1. Terdapat korelasi yang signifikan pada kandungan CO dan O3, dengan nilai korelasi yang lebih besar dari 0.1. Hal ini menunjukkan adanya hubungan positif antara kandungan CO2 dan O3.
+        2. Korelasi yang signifikan juga ditemukan antara kandungan SO2 dan NO2, dengan nilai korelasi yang lebih besar dari 0.1. Ini mungkin menunjukkan adanya polusi udara yang berasal dari sumber yang sama atau proses yang serupa yang menghasilkan kedua zat tersebut.
+        3. Namun, tidak ada korelasi yang signifikan yang ditemukan antara kandungan CO2 dan SO2, serta antara kandungan CO2 dan NO2. Hal ini menunjukkan bahwa meskipun kedua pasangan tersebut memiliki nilai korelasi di atas 0.1, hubungan antara kandungan CO2 dan SO2 atau NO2 tidak cukup kuat untuk dianggap signifikan.
+        """
+    )
+    with st.expander("Conclution"):
+        st.write(
+        """ 
+            Semua Kandungan terhadap CO, SO2, dan O3 memiliki korelasi tinggi dikarenakan nilai nya > 0.1
+        """
+    )
+
+#Proses Tab 4
+def pola_curah_hujan (data):
+    # Buat kolom 'bulan'
+    data['bulan'] = data['tanggal'].dt.strftime('%Y-%m')
+    # Perbandingan Per Bulan
+    monthly_comparison = data.groupby('bulan').mean()
+    # Ekstrak bulan dari kolom tanggal
+    data['bulan'] = data['tanggal'].dt.month
+    
+    # Perbandingan rata-rata curah hujan per bulan
+    monthly_rain_comparison = data.groupby('bulan')['RAIN'].mean()
+    
+    # Visualisasi pola musiman curah hujan
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x=monthly_rain_comparison.index, y=monthly_rain_comparison)
+    plt.xlabel('Bulan')
+    plt.ylabel('Rata-rata Curah Hujan')
+    plt.title('Pola Musiman Curah Hujan')
+    st.pyplot(plt)
+    with st.expander("See explanation"):
+        st.write(
+    """Untuk menentukan tingkat polusi udara saya mengambil berdasarkan PM2.5. PM2.5 sebuah istilah yang digunakan untuk mengukur partikel halus di udara, yang memiliki diameter kurang dari atau sama dengan 2.5 mikrometer. Partikel ini dapat berasal dari berbagai sumber, termasuk emisi kendaraan bermotor, industri, pembakaran biomassa, dan debu.
+    Seperti ya dilihat berdasarkan grafik bahwa tingkat polusi tertinggi di station Aotizhongxin biasa terjadi di bulan pergantian tahun atau bulan awal awal tahun.
+    """
+        )
+
+#Proses Tab 5
+def perbedaan_polusi(data):
+    # Table tingkat polusi udara
+    data['tanggal'] = pd.to_datetime(data[['year', 'month', 'day']], format='%Y-%m-%d')
+    st.write('#### Tabel Tahun dan Rata-rata Tingkat Polusi Udara Pertahun')
+    yearly_pm25_avg = data.groupby(data['tanggal'].dt.year)['PM2.5'].mean().reset_index()
+    yearly_pm10_avg = data.groupby(data['tanggal'].dt.year)['PM10'].mean().reset_index()
+    yearly_co_avg = data.groupby(data['tanggal'].dt.year)['CO'].mean().reset_index()
+    yearly_no2_avg = data.groupby(data['tanggal'].dt.year)['NO2'].mean().reset_index()
+    yearly_so2_avg = data.groupby(data['tanggal'].dt.year)['SO2'].mean().reset_index()
+    yearly_o3_avg = data.groupby(data['tanggal'].dt.year)['O3'].mean().reset_index()
+    yearly_pm_avg = pd.merge(yearly_pm25_avg, pd.merge(yearly_pm10_avg, pd.merge(yearly_co_avg, pd.merge(yearly_no2_avg, pd.merge(yearly_so2_avg, yearly_o3_avg, on='tanggal', how='outer'), on='tanggal', how='outer'), on='tanggal', how='outer'), on='tanggal', how='outer'), on='tanggal', how='outer')
+    yearly_pm_avg.columns = ['Tahun', 'Rata-rata PM2.5', 'Rata-rata PM10', 'Rata-rata CO', 'Rata-rata NO2', 'Rata-rata SO2', 'Rata-rata O3']
+
+    yearly_pm_avg = yearly_pm_avg.applymap(lambda x: '{:.0f}'.format(x) if isinstance(x, (int, float)) else x)
+    st.write(yearly_pm_avg)
+
+
+    with st.expander("Lihat Penjelasan"):
+        st.write(
+            """
+            **Tingkat Polusi Udara di Aotizhongxin (2013-2017)**
+
+            Tabel di atas menunjukkan rata-rata tingkat polusi udara di stasiun Aotizhongxin selama periode 2013 hingga 2017. Parameter yang diukur meliputi PM2.5, PM10, CO, NO2, SO2, dan O3.
+
+            - **PM2.5 (Partikulat Matter 2.5):** Merupakan partikel halus dengan diameter kurang dari 2.5 mikrometer. Peningkatan nilai PM2.5 dapat memiliki dampak kesehatan yang signifikan.
+
+            - **PM10 (Partikulat Matter 10):** Merupakan partikel dengan diameter kurang dari 10 mikrometer. Seperti PM2.5, PM10 dapat mempengaruhi kesehatan manusia.
+
+            - **CO (Carbon Monoxide):** Gas beracun yang dapat dihasilkan oleh pembakaran bahan bakar fosil. Peningkatan CO dapat menjadi indikator emisi polusi udara dari kendaraan dan industri.
+
+            - **NO2 (Nitrogen Dioxide):** Gas yang berasal dari pembakaran bahan bakar dan aktivitas industri. Tingkat NO2 dapat memberikan informasi tentang kualitas udara dan dampaknya pada kesehatan manusia.
+
+            - **SO2 (Sulfur Dioxide):** Gas yang dihasilkan oleh pembakaran bahan bakar fosil yang mengandung belerang. SO2 dapat menyebabkan iritasi pada saluran pernapasan.
+
+            - **O3 (Ozone):** Gas yang dapat memiliki dampak positif di atmosfera atas tetapi dapat menjadi polutan di permukaan bumi. Tingkat O3 dapat berkontribusi pada polusi udara dan masalah pernapasan.
+
+            Dari tabel, dapat diamati bahwa tingkat PM2.5 tertinggi terjadi pada tahun 2017, sementara CO, NO2, dan O3 juga menunjukkan variasi selama periode tersebut. Pemahaman tentang pola ini dapat membantu dalam merencanakan langkah-langkah pengelolaan lingkungan untuk meningkatkan kualitas udara di wilayah tersebut.
+            """
+        )
+
+    st.subheader('Grafik Perbedaan Tingkat Polusi')
+    # Analisis korelasi
+    correlation_matrix = data[['PM2.5', 'TEMP', 'PRES', 'WSPM']].corr()
+
+    # Visualisasi matriks korelasi menggunakan heatmap
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=.5, ax=ax)
+    plt.title('Matriks Korelasi antara Variabel Cuaca dan PM2.5')
+    st.pyplot(plt)
+
+    with st.expander("Lihat Penjelasan"):
+        st.write(
+            """
+            Matriks korelasi di atas menggambarkan hubungan statistik antara variabel cuaca (TEMP, PRES, WSPM) dan tingkat polusi udara PM2.5.
+            
+            - **Korelasi Positif:** Nilai mendekati 1 menunjukkan hubungan positif, di mana kenaikan satu variabel berhubungan dengan kenaikan variabel lainnya.
+            
+            - **Korelasi Negatif:** Nilai mendekati -1 menunjukkan hubungan negatif, di mana kenaikan satu variabel berhubungan dengan penurunan variabel lainnya.
+            
+            - **Korelasi Nol:** Nilai mendekati 0 menunjukkan tidak adanya korelasi linier antara dua variabel.
+            
+            Dari grafik, kita dapat melihat seberapa kuat hubungan antara variabel-variabel tersebut. Misalnya, korelasi positif yang signifikan antara TEMP (suhu) dan PM2.5 mungkin menunjukkan bahwa peningkatan suhu berkaitan dengan peningkatan PM2.5.
+            """
+        )
+
+#Proses Tab 6   
+def Prediksi_PM25(data, model_type='Linear Regression', dataset_size=0.8):
+    st.subheader('Konfigurasi Model dan Dataset')
+
+    #pilih variabel cuaca yang akan digunakan untuk prediksi
+    features = st.multiselect('Pilih variabel cuaca', ['TEMP', 'DEWP', 'WSPM'])
+
+    st.caption('Penggunaan jumlah variabel yang lebih banyak, meningkatkan keakuratan prediksi PM2.5')
+
+    if not features:
+        st.warning('Pilihlah setidaknya satu **variabel cuaca** untuk prediksi PM2.5')
+        return
+    
+    #widget untuk memilih model regresi
+    model_type = st.selectbox('Pilih Model Regresi', ['Linear Regression', 'Random Forest'])
+    if model_type == 'Linear Regression':
+        st.caption('Penggunaan regresi linear memberikan pemahaman yang lebih sederhana dan interpretatif')
+    else:
+        st.caption('Penggunaan Regresi Hutan Acak memberikan prediksi yang lebih akurat dalam hubungan yang lebih kompleks dalam data')
+
+    #widget untuk mengatur ukuran dataset pengujian
+    dataset_size = st.slider('Ukuran Dataset Pengujian', 0.1, 0.9, 0.8, step=0.05)
+    st.caption('Ukuran dataset sangat mempengaruhi dari hasil prediksi')
+
+    
+    #pilih variabel target (misalnya, PM2.5)
+    target = 'PM2.5'
+    #pisahkan data menjadi dataset latihan dan pengujian
+    X_train, X_test, y_train, y_test = train_test_split(data[features], data[target], test_size=dataset_size, random_state=42)
+    
+    #inisialisasi model
+    if model_type == 'Linear Regression':
+        model = LinearRegression()
+    else:
+        model = RandomForestRegressor()
+    
+    #latih model pada dataset latihan
+    model.fit(X_train, y_train)
+    
+    #lakukan prediksi pada dataset pengujian
+    y_pred = model.predict(X_test)
+    
+    #hitung Mean Squared Error sebagai metrik evaluasi
+    mse = mean_squared_error(y_test, y_pred)
+    st.write(f'Mean Squared Error: {mse}')
+
+    # Visualisasi hasil prediksi
+    fig, ax = plt.subplots(figsize=(10, 6))
+    #plot data aktual
+    ax.scatter(X_test[features[0]], y_test, label='Actual', alpha=0.8, color='lightblue')
+    # Plot data prediksi
+    ax.scatter(X_test[features[0]], y_pred, label='Predicted', alpha=0.5, color='lightcoral')
+    #atur label
+    ax.set_xlabel('(' + ', '.join(features)+')')
+    ax.set_ylabel('Tingkat PM2.5')
+    ax.set_title('Prediksi Tingkat PM2.5 Berdasarkan ' + ', '.join(features))
+    ax.legend()
+    
+    st.pyplot(fig)
+
+    with st.expander('Penjelasan Tingkat Prediksi PM2.5'):
+        st.write("Prediksi tingkat PM2.5 dapat dilakukan dengan parameter TEMP, DEWP, dan WSPM. Bukan hanya itu, untuk memprediksi tingkat PM2.5 dapat menggunakan"
+                + "variabel lain juga. Penggunaan model regresi akan menentukan hasil dari prediksi. Jika menggunakan **Regresi Linear** maka dapat memberikan pemahaman"
+                + "yang lebih sederhana dan interpretatif, sedangkan jika menggunakan **Regresi Hutan Acak** akan memberikan prediksi yang **lebih akurat**"
+                + "dalam hubungan yang lebih kompleks dalam data. Semua itu bergantung dari kebutuhan pengguna dan juga dapat dilakukan eksperimen (uji coba) "
+                + "dan evaluasi kinerja pada data model yang lebih spesifik")
+        
+    st.caption("TEMP : Temprature (Suhu)")
+    st.caption("DEWP : Dew Point (Titik Embun)")
+    st.caption("WSPM : Wetland Surface Water Model (Aliran & Tinggi Air)")
+
+
 df_Data = load_data("https://raw.githubusercontent.com/MFaridN/UAS_PDSD/main/PRSA_Data_Aotizhongxin_20130301-20170228.csv")
 data_clean = cleaning_data (df_Data)
 data_clean_wd = cleaning_data_wd (df_Data)
@@ -447,22 +576,34 @@ with st.sidebar:
     
     
 if (selected == 'Dashboard') :
-    st.header(f"Analisis Polusi Udara Aotizhongxin")
+    st.header(f"Analisis Kualitas Udara")
+    st.write('Menggunakan Data Kota Aotizhongxin')
+    st.write(data_clean_wd.drop(columns=['No']).head(100))
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["TAB 1", "TAB 2", "TAB 3", "TAB 4", "TAB 5","TAB 6"])
 
     with tab1:
-        st.write("Nama : Muhammad Farid Nurrahman")
-        st.write("Nim : 10122256")
-        st.header("Informasi yang ingin disampaikan")
-        st.write("1. Bagaimana perbandingan tingkat polusi udara perharinya?")
-        st.write("2. Penerapan Clustering & Analisis Regresi terhadap informasi no-1 dan tren yang tercipta")
-        Air_Pollution_Day(data_clean)
+        st.markdown("**Nama : Muhammad Farid Nurrahman**")
+        st.markdown("**Nim : 10122256**")
+        st.write('')
+        st.markdown("""
+                    ### Informasi yang ingin disampaikan
+                    - **1. Bagaimana perbandingan tingkat polusi udara perhari,perbulan dan pertahun?**
+                    - **2. Apakah tingkat SO2, NO2, dan O3 lebih tinggi pada hari dengan suhu tinggi atau rendah?**
+                    """)
+        st.write('')
+        main_visualization(data_clean)
+        st.write('<hr>', unsafe_allow_html=True)
+        visualization_temp_air(data_clean)
+        
     with tab2:
-        st.write("Nama : Erwin Hafiz Triadi")
-        st.write("Nim : 10122269")
-        st.header("Informasi yang ingin disampaikan")
-        st.write("1. Bagaimana tren kualitas udara berdasarkan PM2.5, PM10, SO2, NO2, CO, dan O3 selama periode waktu tertentu?")
-        st.write("2. Penerapan Clustering & Analisis Regresi terhadap informasi no-1 dan tren yang tercipta")
+        st.markdown("**Nama : Erwin Hafiz Triadi**")
+        st.markdown("**Nim : 10122269**")
+        st.markdown("""
+                    ### Informasi yang ingin disampaikan
+                    - **1. Bagaimana tren kualitas udara berdasarkan PM2.5, PM10, SO2, NO2, CO, dan O3 selama periode waktu tertentu?**
+                    - **2. Penerapan Clustering & Analisis Regresi terhadap informasi no-1 dan tren yang tercipta**
+                    """)
+        st.write('')
         st.write("Data yang Digunakan di Aotizhongxin")
         st.write(data_clean.tail(50))
         st.header("Overview tren sepanjang waktu")
@@ -514,39 +655,62 @@ if (selected == 'Dashboard') :
         visualisasi_regresi(data_clean_hourly)
         
     with tab3:
-        st.write("Nama : Mochammad Syahrul Almugni Yusup")
-        st.write("Nim : 10122244")
+        st.markdown("**Nama :  Mochammad Syahrul Almugni Yusup**")
+        st.markdown("**Nim : 10122244**")
+        st.markdown("""
+                    ### Informasi yang ingin disampaikan
+                    - **1. Bagaimana perbandingan tingkat polusi udara perharinya?**
+                    """)
+        st.write('')
         korelasiSO(data_clean)
         korelasiSO2(data_clean)
         korelasiNO2(data_clean)
+        
     with tab4:
-        st.write("Nama : Fikkry Ihza Fachrezi")
-        st.write("Nim : 10122510")
+        st.markdown("**Nama : Fikkry Ihza Fachrezi**")
+        st.markdown("**Nim : 10122510**")
+        st.markdown("""
+                    ### Informasi yang ingin disampaikan
+                    - **Apakah ada perbedaan dalam tingkat polusi udara antara bulan-bulan tertentu atau jam-jam tertentu dalam sehari?**
+                    """)
+        st.write('')
         st.subheader('Perbedaan Tingkat Polusi')
         perbedaan_polusi(data_clean)
 
     with tab5:
-        st.write("Nama : Win Termulo Nova")
-        st.write("Nim : 10122273")
+        st.markdown("**Nama : Win Termulo Nova**")
+        st.markdown("**Nim : 10122273**")
+        st.markdown("""
+                    ### Informasi yang ingin disampaikan
+                    - **Bagaimana pola musiman curah hujan memengaruhi kualitas udara**
+                    """)
+        st.write('')
         st.subheader('Pola Musiman Curah Hujan')
         pola_curah_hujan (data_clean)
+    
     with tab6:
-        st.write("Nama : Muhammad Pradipta Waskitha")
-        st.write("Nim : 10122265")
-        st.markdown('**Bisakah Memprediksi tingkat PM2.5 Dengan Parameter TEMP,DEWP, dan WSPM?**')
+        st.markdown("**Nama : Muhammad Pradipta Waskitha**")
+        st.markdown("**Nim : 10122265**")
+        st.markdown("""
+                    ### Informasi yang ingin disampaikan
+                    - **Bisakah Memprediksi tingkat PM2.5 Dengan Parameter TEMP,DEWP, dan WSPM?**
+                    """)
+        st.write('')
         Prediksi_PM25(data_clean)
         
 elif (selected == 'Profile') :
     st.header('Proyek Analisis Data: Air Quality Dataset')
-    st.subheader('Kelompok : IF7- Numpy')
-    st.subheader('Anggota :')
-    st.write('10122244 - MOCHAMMAD SYAHRUL ALMUGNI YUSUP')
-    st.write('10122256 - MUHAMMAD FARID NURRAHMAN')
-    st.write('10122265 - MUHAMMAD PRADIPTA WASKITHA')
-    st.write('10122269 - ERWIN HAFIZ TRIADI')
-    st.write('10122273 - WIN TERMULO NOVA')
-    st.write('10122510 - FIKKRY IHZA FACHREZI')
-    st.write('Isi data yang digunakan')
-    st.write(data_clean_wd.tail(50))
+    st.markdown("""
+                ### Kelompok : IF7- Numpy
+                **Anggota :**
+                - **10122244 - MOCHAMMAD SYAHRUL ALMUGNI YUSUP**
+                - **10122256 - MUHAMMAD FARID NURRAHMAN**
+                - **10122265 - MUHAMMAD PRADIPTA WASKITHA**
+                - **10122269 - ERWIN HAFIZ TRIADI**
+                - **10122269 - ERWIN HAFIZ TRIADI**
+                - **10122273 - WIN TERMULO NOVA**
+                - **10122510 - FIKKRY IHZA FACHREZI**
+                """)
+   
     
         
