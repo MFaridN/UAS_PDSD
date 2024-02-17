@@ -3,6 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from streamlit_option_menu import option_menu
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import RandomForestRegressor
+
+
 
 @st.cache_data
 #Load Data CSV
@@ -55,6 +61,81 @@ def Air_Pollution_Day(data):
     Seperti ya dilihat berdasarkan grafik bahwa tingkat polusi tertinggi di station Aotizhongxin biasa terjadi di bulan pergantian tahun atau bulan awal awal tahun.
     """
         )
+    
+def Prediksi_PM25(data, model_type='Linear Regression', dataset_size=0.8):
+    st.subheader('Konfigurasi Model dan Dataset')
+
+    #pilih variabel cuaca yang akan digunakan untuk prediksi
+    features = st.multiselect('Pilih variabel cuaca', ['TEMP', 'DEWP', 'WSPM'])
+
+    st.caption('Penggunaan jumlah variabel yang lebih banyak, meningkatkan keakuratan prediksi PM2.5')
+
+    if not features:
+        st.warning('Pilihlah setidaknya satu **variabel cuaca** untuk prediksi PM2.5')
+        return
+    
+    #widget untuk memilih model regresi
+    model_type = st.selectbox('Pilih Model Regresi', ['Linear Regression', 'Random Forest'])
+    if model_type == 'Linear Regression':
+        st.caption('Penggunaan regresi linear memberikan pemahaman yang lebih sederhana dan interpretatif')
+    else:
+        st.caption('Penggunaan Regresi Hutan Acak memberikan prediksi yang lebih akurat dalam hubungan yang lebih kompleks dalam data')
+
+    
+    #widget untuk mengatur ukuran dataset pengujian
+    dataset_size = st.slider('Ukuran Dataset Pengujian', 0.1, 0.9, 0.8, step=0.05)
+    st.caption('Ukuran dataset sangat mempengaruhi dari hasil prediksi')
+
+    
+    #pilih variabel target (misalnya, PM2.5)
+    target = 'PM2.5'
+    #pisahkan data menjadi dataset latihan dan pengujian
+    X_train, X_test, y_train, y_test = train_test_split(data[features], data[target], test_size=dataset_size, random_state=42)
+    
+    #inisialisasi model
+    if model_type == 'Linear Regression':
+        model = LinearRegression()
+    else:
+        model = RandomForestRegressor()
+    
+    #latih model pada dataset latihan
+    model.fit(X_train, y_train)
+    
+    #lakukan prediksi pada dataset pengujian
+    y_pred = model.predict(X_test)
+    
+    #hitung Mean Squared Error sebagai metrik evaluasi
+    mse = mean_squared_error(y_test, y_pred)
+    st.write(f'Mean Squared Error: {mse}')
+
+    # Visualisasi hasil prediksi
+    fig, ax = plt.subplots(figsize=(10, 6))
+    #plot data aktual
+    ax.scatter(X_test[features[0]], y_test, label='Actual', alpha=0.8, color='lightblue')
+    # Plot data prediksi
+    ax.scatter(X_test[features[0]], y_pred, label='Predicted', alpha=0.5, color='lightcoral')
+    #atur label
+    ax.set_xlabel('(' + ', '.join(features)+')')
+    ax.set_ylabel('Tingkat PM2.5')
+    ax.set_title('Prediksi Tingkat PM2.5 Berdasarkan ' + ', '.join(features))
+    ax.legend()
+    
+    st.pyplot(fig)
+
+    with st.expander('Penjelasan Tingkat Prediksi PM2.5'):
+        st.write("Prediksi tingkat PM2.5 dapat dilakukan dengan parameter TEMP, DEWP, dan WSPM. Bukan hanya itu, untuk memprediksi tingkat PM2.5 dapat menggunakan"
+                + "variabel lain juga. Penggunaan model regresi akan menentukan hasil dari prediksi. Jika menggunakan **Regresi Linear** maka dapat memberikan pemahaman"
+                + "yang lebih sederhana dan interpretatif, sedangkan jika menggunakan **Regresi Hutan Acak** akan memberikan prediksi yang **lebih akurat**"
+                + "dalam hubungan yang lebih kompleks dalam data. Semua itu bergantung dari kebutuhan pengguna dan juga dapat dilakukan eksperimen (uji coba) "
+                + "dan evaluasi kinerja pada data model yang lebih spesifik")
+        
+    st.caption("TEMP : Temprature (Suhu)")
+    st.caption("DEWP : Dew Point (Titik Embun)")
+    st.caption("WSPM : Wetland Surface Water Model (Aliran & Tinggi Air)")
+
+    
+
+
 
 
 def pola_curah_hujan (data):
@@ -93,9 +174,11 @@ with st.sidebar:
                            icons=["easel2", "graph-up"],
                            menu_icon="cast",
                            default_index=0)
+    
+    
 if (selected == 'Dashboard') :
     st.header(f"Analisis Polusi Udara Aotizhongxin")
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Pertanyaan 1", "Pertanyaan 2", "Pertanyaan 3", "Pertanyaan 4", "Pertanyaan 5","Pertanyaan 6"])
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["Pertanyaan 1", "Pertanyaan 2", "Pertanyaan 3", "Pertanyaan 4", "Pertanyaan 5","Pertanyaan 6","Prediksi Tingkat PM2.5"])
 
     with tab1:
         st.subheader('10122256 - Muhammad Farid Nurrahman')
@@ -116,3 +199,9 @@ if (selected == 'Dashboard') :
     with tab6:
         st.header("Tab 3")
         st.image("https://static.streamlit.io/examples/owl.jpg")
+    with tab7:
+        st.header("10122265 - Muhammad Pradipta Waskitha")
+        st.markdown('**Bisakah Memprediksi tingkat PM2.5 Dengan Parameter TEMP,DEWP, dan WSPM?**')
+        Prediksi_PM25(data_clean)
+        
+        
