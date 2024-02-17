@@ -371,7 +371,7 @@ with st.sidebar:
                            default_index=0)
 if (selected == 'Dashboard') :
     st.title(f"Analisis Polusi Udara Aotizhongxin")
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Pertanyaan 1", "Pertanyaan 2", "Pertanyaan 3", "Pertanyaan 4", "Pertanyaan 5","Pertanyaan 6"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["TAB 1", "TAB 2", "TAB 3", "TAB 4", "TAB 5","TAB 6"])
 
     with tab1:
         st.write("Nama : Muhammad Farid Nurrahman")
@@ -379,7 +379,6 @@ if (selected == 'Dashboard') :
         st.header("Informasi yang ingin disampaikan")
         st.write("1. Bagaimana perbandingan tingkat polusi udara perharinya?")
         st.write("2. Penerapan Clustering & Analisis Regresi terhadap informasi no-1 dan tren yang tercipta")
-        st.write("Data yang Digunakan di Aotizhongxin")
         Air_Pollution_Day(data_clean)
     with tab2:
         st.write("Nama : Erwin Hafiz Triadi")
@@ -455,7 +454,7 @@ if (selected == 'Dashboard') :
         st.subheader('Pola Musiman Curah Hujan')
         pola_curah_hujan (data_clean)
     with tab6:
-        st.write("Nama : ")
+        st.write("Nama : Muhammad Pradipta Waskitha")
         st.write("Nim : 10122265")
         st.image("https://static.streamlit.io/examples/owl.jpg")
         
