@@ -1,8 +1,6 @@
-numpy
 streamlit
 pandas
 streamlit_option_menu
-requests
 matplotlib
 seaborn
 sklearn.model_selection
