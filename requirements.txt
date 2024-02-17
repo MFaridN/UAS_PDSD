@@ -1,12 +1,7 @@
 streamlit
 pandas
-streamlit_option_menu
 matplotlib
 seaborn
-sklearn.model_selection
-sklearn.linear_model
-sklearn.metrics
-sklearn.ensemble
-statsmodels.api
-sklearn.preprocessing
-sklearn.cluster
+streamlit-option-menu
+scikit-learn
+statsmodels
